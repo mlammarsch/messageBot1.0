@@ -117,6 +117,7 @@
 </template>
 
 <script>
+// testkommentar zum Git Test 2024-11-21
 // Importieren der notwendigen Komponenten und Services
 import AudioRecorderModal from './components/AudioRecorderModal.vue';
 import WebhookSettings from './components/WebhookSettings.vue';

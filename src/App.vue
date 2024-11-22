@@ -342,7 +342,7 @@ export default {
 .chat-content {
   position: absolute;
   top: 0;
-  bottom: 60px; /* Höhe der Eingabeleiste beachten */
+  bottom: 00px; /* Höhe der Eingabeleiste beachten */
   width: 100%;
   overflow-y: auto;
   padding: 10px;
@@ -355,8 +355,9 @@ export default {
   background-color: var(--chat-bubble-background);
   border-radius: var(--chat-bubble-border-radius);
   padding: var(--chat-bubble-padding);
-  max-width: 80%;
-  margin: var(--chat-bubble-margin) auto;
+  max-width: 90%;
+  margin-top: var(--chat-bubble-margin);
+  margin-bottom: 0; /* Entfernt den unteren Abstand */
   align-self: flex-start;
 }
 

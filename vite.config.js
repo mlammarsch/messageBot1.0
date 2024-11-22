@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { VitePWA } from 'vite-plugin-pwa';
 
+/* Konfiguration von Vite für ein Vue-Projekt inklusive PWA-Plugin */
 export default defineConfig({
   plugins: [
     vue(),
@@ -29,7 +30,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Workbox Konfiguration (optional)
+        // An optional area to customize the Workbox behavior if needed
       }
     })
   ],

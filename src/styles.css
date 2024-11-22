@@ -1,17 +1,21 @@
 :root {
+    /* Grundlegende Schriftarten und Darstellung */
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
     font-weight: 400;
 
+    /* Farbschema und -werte für helle und dunkle Modi */
     color-scheme: light dark;
     color: rgba(255, 255, 255, 0.87);
     background-color: #242424;
 
+    /* Schriftglättung und Textdarstellung */
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
+    /* Variablen für Button- und Modaldarstellung */
     --btn-transition: transform 0.1s, opacity 0.1s;
     --btn-active-scale: 0.95;
     --btn-active-opacity: 0.8;
@@ -26,6 +30,7 @@
     --chat-bubble-margin: 10px 0;
 }
 
+/* Styling für deaktivierte Buttons */
 .btn-primary:disabled, 
 .btn-disabled {
     background-color: #ccc; 
@@ -33,6 +38,7 @@
     opacity: 0.5;
 }
 
+/* Standardlink-Stile */
 a {
     font-weight: 500;
     color: #646cff;
@@ -42,6 +48,7 @@ a:hover {
     color: #535bf2;
 }
 
+/* Vollbild-Darstellung für mobile Nutzer */
 body {
     margin: 0;
     padding: 0;
@@ -52,9 +59,9 @@ body {
     height: 100vh;
     background-color: #242424;
     color: rgba(255, 255, 255, 0.87);
-    font-family: inherit;
 }
 
+/* Button-Stile */
 .btn {
     border-radius: 20px;
     border: 1px solid transparent;
@@ -74,6 +81,7 @@ body {
     outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* Hauptcontainer-Darstellung */
 .app-container {
     width: 100vw;
     height: 100%;
@@ -86,6 +94,7 @@ body {
     overflow: hidden;
 }
 
+/* Chatblase-Design */
 .chat-bubble {
     background-color: var(--chat-bubble-background);
     border-radius: var(--chat-bubble-border-radius);
@@ -117,12 +126,14 @@ body {
     }
 }
 
+/* Eingabebereich-Stile */
 .input-area {
     padding: 10px;
     background-color: #ffffff;
     border-top: solid 1px rgba(0, 0, 0, .125); 
 }
 
+/* Audiosteuerungsbereich */
 .audio-control {
     margin: 5px;
     display: flex;

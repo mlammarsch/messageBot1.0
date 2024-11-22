@@ -7,26 +7,28 @@ import axios from 'axios';
  * @returns {Promise} - Axios Promise mit der Serverantwort.
  */
 export const sendToWebhook = async (webhookURL, data) => {
+  // Check, whether the webhook URL has been set.
   if (!webhookURL) {
     throw new Error("Webhook URL is not set.");
   }
 
   const formData = new FormData();
-  // Nachricht und andere Daten zum FormData hinzufügen
+  // Adds text message and other data to formData
   formData.append('text', data.text);
   if (data.audio) {
+    // Adding audio data to formData if provided
     formData.append('audio', data.audio, 'audio.mp3');
   }
   formData.append('timestamp', data.timestamp);
   formData.append('os', data.os);
   formData.append('browser', data.browser); // Neu hinzugefügt
 
-  // Neu hinzugefügte Properties
+  // Newly added properties
   formData.append('audioAttached', data.audioAttached);
   formData.append('imageAttached', data.imageAttached);
 
   try {
-    // Senden der Daten an den Webhook
+    // Sends data to the webhook with a specified timeout
     const response = await axios.post(webhookURL, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'

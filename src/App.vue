@@ -1,16 +1,16 @@
 <template>
   <div class="app-container">
-    <!-- Warnmeldung -->
+    <!-- Warnmeldung für fehlende Webhook-URL -->
     <div v-if="!webhookURL" class="alert alert-warning" role="alert">
       Webhook URL is not set. Please configure it in settings.
     </div>
 
-    <!-- Rückmeldung -->
+    <!-- Rückmeldung nach Nachrichtenvorgängen -->
     <div v-if="responseMessage" class="alert alert-info" role="alert">
       {{ responseMessage }}
     </div>
 
-    <!-- Chat -->
+    <!-- Der Chat-Bereich mit Nachrichten-Liste -->
     <div class="chat-content" ref="chatContainer" role="log" aria-live="polite">
       <div 
         v-for="message in messages" 
@@ -30,6 +30,7 @@
         <div>
           {{ message.text }}
           <template v-if="message.hasAudio">
+            <!-- Symbole für Audio-Anhang -->
             <i class="bi bi-paperclip" aria-hidden="true"></i>
             <i class="bi bi-speaker" aria-hidden="true"></i>
           </template>
@@ -37,7 +38,7 @@
       </div>
     </div>
 
-    <!-- Eingabebereich -->
+    <!-- Eingabebereich für Text und Audiomeldungen -->
     <div class="input-area p-2 border-top bg-light" ref="inputArea">
       <div class="d-flex align-items-center mb-2">
         <button 
@@ -48,6 +49,7 @@
         >
           <i class="bi bi-mic-fill" aria-hidden="true"></i>
         </button>
+        <!-- Nachrichteneingabe -->
         <input 
           ref="messageInput" 
           type="text" 
@@ -68,6 +70,7 @@
         </button>
       </div>
 
+      <!-- Audiowiedergabebereich -->
       <div v-if="audio" class="audio-control d-flex align-items-center mb-2">
         <audio 
           :src="audioURL" 
@@ -86,7 +89,7 @@
       </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Audio-Rekorder-Modal Darstellung -->
     <AudioRecorderModal 
       v-if="showAudioRecorder" 
       @audio-ready="setAudio" 
@@ -95,7 +98,7 @@
       @focus-input="focusMessageInput"
     />
 
-    <!-- Einstellungen -->
+    <!-- Einstellungen-Button -->
     <button 
       @click="openSettings" 
       class="settings-button btn btn-link position-absolute top-0 end-0 me-2 mt-2" 
@@ -105,7 +108,7 @@
       <i class="bi bi-gear" aria-hidden="true"></i>
     </button>
 
-    <!-- Kategorie-Button hinzufügen -->
+    <!-- Kategorie-Button -->
     <button 
       @click="openCategoryModal" 
       class="category-button btn btn-link position-absolute top-0 end-0 me-2 mt-2" 
@@ -115,7 +118,7 @@
       <i class="bi bi-tags" aria-hidden="true"></i>
     </button>
 
-    <!-- Webhook Settings -->
+    <!-- Webhook-Einstellungskomponente -->
     <WebhookSettings 
       :isOpen="isSettingsOpen" 
       :currentUrl="webhookURL" 
@@ -149,37 +152,42 @@ export default {
   },
   data() {
     return {
-      message: '',
-      audio: null,
-      messages: loadMessages() || [],
-      webhookURL: loadWebhookURL() || '',
-      responseMessage: '',
-      isSending: false,
-      isSettingsOpen: false,
-      showAudioRecorder: false,
-      showCategoryModal: false
+      message: '', // Der aktuelle Inhalt der Textnachricht, die der Benutzer eingegeben hat
+      audio: null, // Das aktuelle Audioblatt, das der Benutzer aufgenommen hat
+      messages: loadMessages() || [], // Geladene Nachrichten aus dem Local Storage
+      webhookURL: loadWebhookURL() || '', // Geladene Webhook-URL aus dem Local Storage
+      responseMessage: '', // Rückantwortnachricht, um dem Benutzer den Status einer Aktion mitzuteilen
+      isSending: false, // Status, ob eine Nachricht gesendet wird
+      isSettingsOpen: false, // Status, ob das Einstellungspanel offen ist
+      showAudioRecorder: false, // Status, ob das Audio-Rekorder-Modal geöffnet ist
+      showCategoryModal: false // Status, ob das Kategoriedialog geöffnet ist
     };
   },
   computed: {
+    // Liefert eine URL des Audios, damit es im Audio-Tag abgespielt werden kann
     audioURL() {
       return this.audio ? URL.createObjectURL(this.audio) : '';
     },
+    // Ermittelt, ob der Sende-Button deaktiviert werden soll
     isSendDisabled() {
       return this.isSending || (!this.message.trim() && !this.audio) || !this.webhookURL;
     }
   },
   methods: {
+    // Sendet die Nachricht zum konfigurierten Webhook
     async sendMessage() {
+      // Zuerst überprüfen, ob eine Webhook-URL existiert
       if (!this.webhookURL) {
         this.responseMessage = "Error: No Webhook URL set.";
         return;
       }
+      // Überprüft, ob eine Nachricht gesendet wird und ob eine Eingabe oder ein Audio vorliegt
       if (this.isSending || (!this.message.trim() && !this.audio)) return;
 
       this.isSending = true;
-      const timestamp = new Date().toISOString();
-      const os = this.getOS();
-      const browser = this.getBrowser();
+      const timestamp = new Date().toISOString(); // Aktueller Zeitstempel im ISO-Format
+      const os = this.getOS(); // Betriebssystem des Benutzers ermitteln
+      const browser = this.getBrowser(); // Browser des Benutzers ermitteln
 
       const data = {
         text: this.message.trim() || 'n/a',
@@ -192,26 +200,28 @@ export default {
       };
 
       try {
+        // Senden der Nachricht an den Webhook
         const response = await sendToWebhook(this.webhookURL, data);
         if (response.status === 200) {
-          this.storeMessage(true);
-          this.clearInputs();
-          this.scrollToBottom();
+          this.storeMessage(true); // Erfolgsmeldung speichert die gesendete Nachricht
+          this.clearInputs(); // Klare die Eingabe- und Audiobereiche
+          this.scrollToBottom(); // Scroll zum Ende der Chat-Nachrichten
         } else {
           this.responseMessage = `Error: Server antwortete mit Status ${response.status}.`;
         }
       } catch (error) {
-        this.storeMessage(false);
+        this.storeMessage(false); // Speichern der gescheiterten Nachricht
         this.responseMessage = "Error: Nachricht konnte nicht gesendet werden.";
       } finally {
-        this.isSending = false;
-        saveMessages(this.messages);
+        this.isSending = false; // Zurücksetzen des Sende-Status
+        saveMessages(this.messages); // Speichern der Nachrichten im Local Storage
         this.$nextTick(() => {
-          this.$refs.messageInput.focus();
-          this.adjustChatLayout();
+          this.$refs.messageInput.focus(); // Fokussiert das Texteingabefeld beim nächsten DOM-Update
+          this.adjustChatLayout(); // Anpassung des Chat-Layouts
         });
       }
     },
+    // Speichert die Nachricht in der Nachrichtenliste und im Speicher
     storeMessage(success) {
       const newMessage = {
         timestamp: new Date(),
@@ -219,8 +229,9 @@ export default {
         text: this.message.trim() || 'n/a',
         hasAudio: Boolean(this.audio)
       };
-      this.messages.unshift(newMessage);
+      this.messages.unshift(newMessage); // Neue Nachricht oben hinzufügen
     },
+    // Formatieren des Zeitstempels in ein gut lesbares Format
     formatTimestamp(timestamp) {
       if (!timestamp) return '';
       const options = { 
@@ -234,6 +245,7 @@ export default {
       };
       return new Intl.DateTimeFormat('de-DE', options).format(new Date(timestamp));
     },
+    // Ermittelt das Betriebssystem basierend auf dem User-Agent
     getOS() {
       const userAgent = window.navigator.userAgent;
       if (/Windows NT 10.0/.test(userAgent)) return 'Windows 10';
@@ -244,6 +256,7 @@ export default {
       if (/Android/.test(userAgent)) return 'Android';
       return 'Unknown OS';
     },
+    // Ermittelt den Browser basierend auf dem User-Agent
     getBrowser() {
       const userAgent = window.navigator.userAgent;
       if (/Firefox\//.test(userAgent)) return 'Firefox';
@@ -252,89 +265,107 @@ export default {
       if (/Safari\//.test(userAgent) && !/Chrome\//.test(userAgent)) return 'Safari';
       return 'Unknown Browser';
     },
+    // Löschen der Nachrichteneingabe und Audioaufnahme
     clearInputs() {
       this.message = '';
       this.audio = null;
     },
+    // Öffnen des Einstellungsdialogs
     openSettings() {
       this.isSettingsOpen = true;
     },
+    // Schließen des Einstellungsdialogs
     closeSettings() {
       this.isSettingsOpen = false;
     },
+    // Öffnen des Kategoriedialogs
     openCategoryModal() {
       this.showCategoryModal = true;
     },
+    // Schließen des Kategoriedialogs
     closeCategoryModal() {
       this.showCategoryModal = false;
       this.focusMessageInput();
     },
+    // Aktualisieren der Webhook-URL und Speicherung dieser
     updateWebhookURL(newURL) {
       this.webhookURL = newURL;
-      saveWebhookURL(newURL);
+      saveWebhookURL(newURL); // Speichern der neuen URL im Local Storage
       this.responseMessage = "Webhook URL erfolgreich aktualisiert!";
       setTimeout(() => {
-        this.responseMessage = '';
+        this.responseMessage = ''; // Entfernen der Bestätigungsmeldung nach 4 Sekunden
       }, 4000);
     },
+    // Löscht die aktuelle Webhook-URL
     clearWebhookURL() {
       this.webhookURL = '';
-      saveWebhookURL('');
+      saveWebhookURL(''); // Löschen der URL aus dem Local Storage
       this.responseMessage = "Webhook URL gelöscht!";
       setTimeout(() => {
-        this.responseMessage = '';
+        this.responseMessage = ''; // Entfernen der Bestätigungsmeldung nach 4 Sekunden
       }, 4000);
     },
+    // Setzt das Audioobjekt und schließt den Audiorecorder
     setAudio(audioBlob) {
       this.audio = audioBlob;
       this.showAudioRecorder = false;
     },
+    // Löscht das angehängte Audio
     deleteAudio() {
       this.audio = null;
-      this.focusMessageInput();
+      this.focusMessageInput(); // Fokussiert wieder das Texteingabefeld
     },
+    // Setzt eine Fehlernachricht und zeigt sie an
     setError(error) {
       this.responseMessage = error;
     },
+    // Öffnen des Audiorecorders
     startRecording() {
       this.showAudioRecorder = true;
     },
+    // Löscht alle Nachrichten und speichert diesen Zustand
     clearMessages() {
       this.messages = [];
       saveMessages(this.messages);
     },
+    // Scrollt zum Ende des Chat-Inhalts
     scrollToBottom() {
       this.$nextTick(() => {
         const container = this.$refs.chatContainer;
         container.scrollTop = container.scrollHeight;
       });
     },
+    // Passt das Layout des Chats an, um Höhe von Eingabeelementen zu berücksichtigen
     adjustChatLayout() {
       const container = this.$refs.chatContainer;
       container.style.paddingBottom = this.$refs.inputArea.clientHeight + 'px';
     },
+    // Fokussiert das Eingabefeld
     focusMessageInput() {
       this.$nextTick(() => {
         this.$refs.messageInput.focus();
       });
     },
+    // Behandelt Tasteneingaben, z.B. Enter drücken
     handleKeyPress(event) {
       if (event.key === 'Enter' && !this.showAudioRecorder && !this.isSettingsOpen && !this.isSendDisabled) {
         this.sendMessage();
       }
     }
   },
+  // Beim Mounten der Komponente durchgeführte Aktionen
   mounted() {
     const savedURL = loadWebhookURL();
     if (savedURL) {
       this.webhookURL = savedURL;
     }
     this.$nextTick(() => {
-      this.scrollToBottom();
-      this.adjustChatLayout();
+      this.scrollToBottom(); // Initialisiere Scrollposition
+      this.adjustChatLayout(); // Initialisiere Layoutanpassungen
     });
     document.addEventListener('keypress', this.handleKeyPress);
   },
+  // Bereinigung bei der Zerstörung der Komponente
   beforeDestroy() {
     document.removeEventListener('keypress', this.handleKeyPress);
   }
@@ -342,12 +373,14 @@ export default {
 </script>
 
 <style>
+/* Stile für Warnmeldungen und allgemeines Design */
 .alert {
   margin: 10px 0;
   padding: 10px;
   border-radius: 5px;
 }
 
+/* Farben für alert-Komponenten */
 .alert-warning {
   background-color: #ffeb3b;
   color: #1a1a1a;
@@ -358,6 +391,7 @@ export default {
   color: #004085;
 }
 
+/* Hauptkontainer-Stile */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -367,6 +401,7 @@ export default {
   background-color: #e0f7e9;
 }
 
+/* Stile für den Chatinhalt */
 .chat-content {
   position: absolute;
   top: 0;
@@ -379,6 +414,7 @@ export default {
   scroll-behavior: smooth;
 }
 
+/* Stile für Chatblasen */
 .chat-bubble {
   background-color: var(--chat-bubble-background);
   border-radius: var(--chat-bubble-border-radius);
@@ -404,6 +440,7 @@ export default {
   align-items: center;
 }
 
+/* Eingabebereich-Stile */
 .input-area {
   position: absolute;
   bottom: 0;
@@ -427,6 +464,7 @@ export default {
   z-index: 2;
 }
 
+/* Button-Transition bei Aktivierung */
 button {
   transition: var(--btn-transition);
 }

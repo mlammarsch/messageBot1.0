@@ -98,13 +98,24 @@
     <!-- Einstellungen -->
     <button 
       @click="openSettings" 
-      class="settings-button btn btn-link position-absolute top-0 end-0 m-2" 
+      class="settings-button btn btn-link position-absolute top-0 end-0 me-2 mt-2" 
       aria-label="Open Settings"
       role="button"
     >
       <i class="bi bi-gear" aria-hidden="true"></i>
     </button>
-    
+
+    <!-- Kategorie-Button hinzufügen -->
+    <button 
+      @click="openCategoryModal" 
+      class="category-button btn btn-link position-absolute top-0 end-0 me-2 mt-2" 
+      aria-label="Open Category Dialog"
+      role="button"
+    >
+      <i class="bi bi-tags" aria-hidden="true"></i>
+    </button>
+
+    <!-- Webhook Settings -->
     <WebhookSettings 
       :isOpen="isSettingsOpen" 
       :currentUrl="webhookURL" 
@@ -113,12 +124,20 @@
       @clear-messages="clearMessages" 
       @close-settings="closeSettings"
     />
+
+    <!-- Category Modal -->
+    <CategoryModal 
+      v-if="showCategoryModal" 
+      @close-modal="closeCategoryModal"
+      @focus-chat-input="focusMessageInput"
+    />
   </div>
 </template>
 
 <script>
 import AudioRecorderModal from './components/AudioRecorderModal.vue';
 import WebhookSettings from './components/WebhookSettings.vue';
+import CategoryModal from './components/CategoryModal.vue';
 import { sendToWebhook } from './services/api';
 import { loadWebhookURL, saveWebhookURL, saveMessages, loadMessages } from './services/storage.js';
 
@@ -126,6 +145,7 @@ export default {
   components: {
     AudioRecorderModal,
     WebhookSettings,
+    CategoryModal,
   },
   data() {
     return {
@@ -136,7 +156,8 @@ export default {
       responseMessage: '',
       isSending: false,
       isSettingsOpen: false,
-      showAudioRecorder: false
+      showAudioRecorder: false,
+      showCategoryModal: false
     };
   },
   computed: {
@@ -240,6 +261,13 @@ export default {
     },
     closeSettings() {
       this.isSettingsOpen = false;
+    },
+    openCategoryModal() {
+      this.showCategoryModal = true;
+    },
+    closeCategoryModal() {
+      this.showCategoryModal = false;
+      this.focusMessageInput();
     },
     updateWebhookURL(newURL) {
       this.webhookURL = newURL;
@@ -389,6 +417,13 @@ export default {
   position: absolute;
   top: 10px;
   right: 10px;
+  z-index: 2;
+}
+
+.category-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
   z-index: 2;
 }
 

@@ -8,6 +8,7 @@
 /* Definieren von Konstanten für die Schlüsselnamen zur Vermeidung von Hardcoding */
 const WEBHOOK_URL_KEY = 'webhookURL';
 const CHAT_MESSAGES_KEY = 'chatMessages';
+const CATEGORIES_KEY = 'categories';
 
 /**
  * Speichert die Webhook-URL im Local Storage.
@@ -57,6 +58,31 @@ export const loadMessages = () => {
     return Array.isArray(parsedMessages) ? parsedMessages : [];
   } catch (error) {
     console.error('Failed to load chat messages:', error);
+    return [];
+  }
+};
+
+/**
+ * Speichert die Kategorien im Local Storage.
+ * @param {Array} categories - Das Array der Kategorien, das gespeichert werden soll.
+ */
+export const saveCategories = (categories) => {
+  try {
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
+  } catch (error) {
+    console.error('Failed to save categories:', error);
+  }
+};
+
+/**
+ * Lädt die Kategorien aus dem Local Storage.
+ * @returns {Array} - Das Array der gespeicherten Kategorien oder ein leeres Array, wenn keine vorhanden sind.
+ */
+export const loadCategories = () => {
+  try {
+    return JSON.parse(localStorage.getItem(CATEGORIES_KEY)) || [];
+  } catch (error) {
+    console.error('Failed to load categories:', error);
     return [];
   }
 };

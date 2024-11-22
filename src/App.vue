@@ -38,10 +38,10 @@
     </div>
 
     <!-- Eingabebereich -->
-    <div class="input-area p-2 border-top bg-light">
+    <div class="input-area p-2 border-top bg-light" ref="inputArea">
       <div class="d-flex align-items-center mb-2">
         <button 
-          class="btn btn-outline-secondary me-2" 
+          class="btn btn-outline-secondary me-2 rounded-pill" 
           @click="startRecording" 
           aria-label="Record Audio"
           role="button"
@@ -53,12 +53,12 @@
           type="text" 
           v-model="message" 
           placeholder="Type a message" 
-          class="form-control mx-2" 
+          class="form-control mx-2 rounded-pill" 
           aria-label="Nachricht eingeben"
         />
         <button 
           @click="sendMessage" 
-          class="btn btn-primary btn-send" 
+          class="btn btn-primary btn-send rounded-pill" 
           :class="{ 'btn-disabled': isSendDisabled }"
           aria-label="Send Message"
           role="button"
@@ -117,8 +117,6 @@
 </template>
 
 <script>
-// testkommentar zum Git Test 2024-11-21
-// Importieren der notwendigen Komponenten und Services
 import AudioRecorderModal from './components/AudioRecorderModal.vue';
 import WebhookSettings from './components/WebhookSettings.vue';
 import { sendToWebhook } from './services/api';
@@ -131,28 +129,25 @@ export default {
   },
   data() {
     return {
-      message: '', // Der Nachrichtentext
-      audio: null, // Der Audiodaten-Blob
-      messages: loadMessages() || [], // Geladene Nachrichten
-      webhookURL: loadWebhookURL() || '', // Die Webhook-URL
-      responseMessage: '', // Rückmeldung an den Benutzer
-      isSending: false, // Sendeoperation läuft gerade
-      isSettingsOpen: false, // Einstellungs-Dialog offen
-      showAudioRecorder: false // Audiorekorder-Dialog offen
+      message: '',
+      audio: null,
+      messages: loadMessages() || [],
+      webhookURL: loadWebhookURL() || '',
+      responseMessage: '',
+      isSending: false,
+      isSettingsOpen: false,
+      showAudioRecorder: false
     };
   },
   computed: {
-    // URL für das Audio-Element
     audioURL() {
       return this.audio ? URL.createObjectURL(this.audio) : '';
     },
-    // Deaktiviert den Senden-Button
     isSendDisabled() {
       return this.isSending || (!this.message.trim() && !this.audio) || !this.webhookURL;
     }
   },
   methods: {
-    // Versendet eine Nachricht mit Daten an den Webhook
     async sendMessage() {
       if (!this.webhookURL) {
         this.responseMessage = "Error: No Webhook URL set.";
@@ -161,18 +156,18 @@ export default {
       if (this.isSending || (!this.message.trim() && !this.audio)) return;
 
       this.isSending = true;
-      const timestamp = new Date();
+      const timestamp = new Date().toISOString();
       const os = this.getOS();
       const browser = this.getBrowser();
 
       const data = {
-        text: this.message.trim() || 'n/a', // Nachricht oder 'n/a'
+        text: this.message.trim() || 'n/a',
         audio: this.audio,
-        timestamp: timestamp.toISOString(), // Hinzufügen des Zeitstempels
-        os: os, // Betriebssystem ermitteln
-        browser: browser, // Browser ermitteln
-        audioAttached: !!this.audio, // Audio-Anhang
-        imageAttached: false // Bild-Anhang (zukünftig)
+        timestamp: new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin', hour12: false }),
+        os: os,
+        browser: browser,
+        audioAttached: !!this.audio,
+        imageAttached: false
       };
 
       try {
@@ -192,10 +187,10 @@ export default {
         saveMessages(this.messages);
         this.$nextTick(() => {
           this.$refs.messageInput.focus();
+          this.adjustChatLayout();
         });
       }
     },
-    // Speichert die Nachricht in der Verlaufsliste
     storeMessage(success) {
       const newMessage = {
         timestamp: new Date(),
@@ -205,7 +200,6 @@ export default {
       };
       this.messages.unshift(newMessage);
     },
-    // Formatiert einen Zeitstempel
     formatTimestamp(timestamp) {
       if (!timestamp) return '';
       const options = { 
@@ -219,7 +213,6 @@ export default {
       };
       return new Intl.DateTimeFormat('de-DE', options).format(new Date(timestamp));
     },
-    // Ermittelt das Betriebssystem
     getOS() {
       const userAgent = window.navigator.userAgent;
       if (/Windows NT 10.0/.test(userAgent)) return 'Windows 10';
@@ -230,7 +223,6 @@ export default {
       if (/Android/.test(userAgent)) return 'Android';
       return 'Unknown OS';
     },
-    // Ermittelt den Browser
     getBrowser() {
       const userAgent = window.navigator.userAgent;
       if (/Firefox\//.test(userAgent)) return 'Firefox';
@@ -239,20 +231,16 @@ export default {
       if (/Safari\//.test(userAgent) && !/Chrome\//.test(userAgent)) return 'Safari';
       return 'Unknown Browser';
     },
-    // Löscht die Eingabefelder
     clearInputs() {
       this.message = '';
       this.audio = null;
     },
-    // Öffnet die Einstellungen
     openSettings() {
       this.isSettingsOpen = true;
     },
-    // Schließt die Einstellungen
     closeSettings() {
       this.isSettingsOpen = false;
     },
-    // Aktualisiert die Webhook-URL
     updateWebhookURL(newURL) {
       this.webhookURL = newURL;
       saveWebhookURL(newURL);
@@ -261,7 +249,6 @@ export default {
         this.responseMessage = '';
       }, 4000);
     },
-    // Löscht die Webhook-URL
     clearWebhookURL() {
       this.webhookURL = '';
       saveWebhookURL('');
@@ -270,45 +257,43 @@ export default {
         this.responseMessage = '';
       }, 4000);
     },
-    // Setzt das aufgenommene Audio
     setAudio(audioBlob) {
       this.audio = audioBlob;
       this.showAudioRecorder = false;
     },
-    // Löscht das aufgenommene Audio
     deleteAudio() {
       this.audio = null;
       this.focusMessageInput();
     },
-    // Setzt einen Fehler
     setError(error) {
       this.responseMessage = error;
     },
-    // Startet die Aufnahme
     startRecording() {
       this.showAudioRecorder = true;
     },
-    // Löscht alle Nachrichten
     clearMessages() {
       this.messages = [];
       saveMessages(this.messages);
     },
-    // Scrollt zum Ende der Chatliste
     scrollToBottom() {
       this.$nextTick(() => {
         const container = this.$refs.chatContainer;
-        const threshold = 50; 
-        const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
-        if (isAtBottom) {
-          container.scrollTop = 0; 
-        }
+        container.scrollTop = container.scrollHeight;
       });
     },
-    // Fokussiert das Nachrichteneingabefeld
+    adjustChatLayout() {
+      const container = this.$refs.chatContainer;
+      container.style.paddingBottom = this.$refs.inputArea.clientHeight + 'px';
+    },
     focusMessageInput() {
       this.$nextTick(() => {
         this.$refs.messageInput.focus();
       });
+    },
+    handleKeyPress(event) {
+      if (event.key === 'Enter' && !this.showAudioRecorder && !this.isSettingsOpen && !this.isSendDisabled) {
+        this.sendMessage();
+      }
     }
   },
   mounted() {
@@ -318,8 +303,13 @@ export default {
     }
     this.$nextTick(() => {
       this.scrollToBottom();
+      this.adjustChatLayout();
     });
+    document.addEventListener('keypress', this.handleKeyPress);
   },
+  beforeDestroy() {
+    document.removeEventListener('keypress', this.handleKeyPress);
+  }
 };
 </script>
 
@@ -340,82 +330,76 @@ export default {
   color: #004085;
 }
 
-/* Gesamtcontainer des Chat-Systems */
 .app-container {
-  height: 100vh; 
   display: flex;
-  flex-direction: column; 
-  background-color: #e0f7e9; 
-  position: relative; 
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background-color: #e0f7e9;
 }
 
-/* Container für den Chatverlauf */
 .chat-content {
-  flex-grow: 1; 
-  overflow-y: auto; 
+  position: absolute;
+  top: 0;
+  bottom: 60px; /* Höhe der Eingabeleiste beachten */
+  width: 100%;
+  overflow-y: auto;
   padding: 10px;
   display: flex;
-  flex-direction: column-reverse; 
-  scroll-behavior: smooth; 
+  flex-direction: column-reverse;
+  scroll-behavior: smooth;
 }
 
-/* Einzelne Chatnachricht */
 .chat-bubble {
-  background-color: var(--chat-bubble-background); 
-  border-radius: var(--chat-bubble-border-radius); 
-  padding: var(--chat-bubble-padding); 
-  max-width: 80%; 
-  margin: var(--chat-bubble-margin); 
-  position: relative; 
+  background-color: var(--chat-bubble-background);
+  border-radius: var(--chat-bubble-border-radius);
+  padding: var(--chat-bubble-padding);
+  max-width: 80%;
+  margin: var(--chat-bubble-margin) auto;
   align-self: flex-start;
 }
 
-/* Zeitstempel der Nachricht */
 .message-timestamp {
   font-size: 0.8em;
   color: #6c757d;
 }
 
-/* Status der Nachricht */
 .message-status {
   margin-bottom: 5px;
 }
 
-/* Container für den Audio-Player */
 .audio-control {
   margin-top: 10px;
   display: flex;
   align-items: center;
 }
 
-/* Bereich für die Eingabe von Nachrichten */
 .input-area {
-  padding: 10px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
   background-color: #ffffff;
-  border-top: solid 1px rgba(0,0,0,.125); 
-}
-
-.bg-light {
-  background-color: #f8f9fa;
+  border-top: solid 1px rgba(0,0,0,.125);
+  z-index: 1;
 }
 
 .settings-button {
   position: absolute;
   top: 10px;
   right: 10px;
+  z-index: 2;
 }
 
-/* Visuelle Effekte für alle Buttons */
 button {
-  transition: var(--btn-transition); 
+  transition: var(--btn-transition);
 }
 
 button:active {
-  transform: scale(var(--btn-active-scale)); 
-  opacity: var(--btn-active-opacity); 
+  transform: scale(var(--btn-active-scale));
+  opacity: var(--btn-active-opacity);
 }
 
-/* Deaktivierte Buttons */
 .btn-primary:disabled,
 .btn-disabled {
   background-color: #ccc !important;

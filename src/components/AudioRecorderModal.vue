@@ -1,50 +1,51 @@
 <template>
-  <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="audio-recorder-title">
-    <div class="modal-content">
-      <div class="modal-header d-flex justify-content-between align-items-center">
-        <h4 id="audio-recorder-title">
-          Recording active <span>{{ formatTime(elapsedTime) }}</span>
-        </h4>
-        <div class="recording-symbol" :class="{ 'paused': isPaused }" aria-hidden="true">
-          <i v-if="!isPaused" class="bi bi-circle-fill"></i>
-          <i v-else class="bi bi-pause-fill text-warning"></i>
+  <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="audio-recorder-title">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 id="audio-recorder-title" class="modal-title">
+            Recording active <span>{{ formatTime(elapsedTime) }}</span>
+          </h4>
+          <button type="button" class="btn-close" aria-label="Close" @click="cancelRecording"></button>
         </div>
-      </div>
-      <div class="button-group mt-3">
-        <button
-          v-if="!isPaused"
-          @click="pauseRecording"
-          class="btn btn-warning"
-          aria-label="Pause Recording"
-          role="button"
-        >
-          <i class="bi bi-pause-fill" aria-hidden="true"></i> Pause
-        </button>
-        <button
-          v-else
-          @click="resumeRecording"
-          class="btn btn-info"
-          aria-label="Resume Recording"
-          role="button"
-        >
-          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Resume
-        </button>
-        <button
-          @click="stopRecording"
-          class="btn btn-danger"
-          aria-label="Stop Recording"
-          role="button"
-        >
-          <i class="bi bi-square-fill" aria-hidden="true"></i> Stop
-        </button>
-        <button
-          @click="cancelRecording"
-          class="btn btn-outline-secondary"
-          aria-label="Cancel Recording"
-          role="button"
-        >
-          Cancel
-        </button>
+        <div class="modal-body d-flex justify-content-center align-items-center">
+          <div class="recording-symbol" :class="{ 'paused': isPaused }" aria-hidden="true">
+            <i v-if="!isPaused" class="bi bi-circle-fill display-4"></i>
+            <i v-else class="bi bi-pause-fill text-warning display-4"></i>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            v-if="!isPaused"
+            @click="pauseRecording"
+            class="btn btn-warning rounded-pill"
+            aria-label="Pause Recording"
+          >
+            <i class="bi bi-pause-fill" aria-hidden="true"></i> Pause
+          </button>
+          <button
+            v-else
+            @click="resumeRecording"
+            class="btn btn-info rounded-pill"
+            aria-label="Resume Recording"
+          >
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Resume
+          </button>
+          <button
+            @click="stopRecording"
+            class="btn btn-danger rounded-pill"
+            aria-label="Stop Recording"
+          >
+            <i class="bi bi-square-fill" aria-hidden="true"></i> Stop
+          </button>
+          <button
+            @click="cancelRecording"
+            class="btn btn-outline-secondary rounded-pill"
+            aria-label="Cancel Recording"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -63,6 +64,12 @@ export default {
   },
   created() {
     this.startRecording();
+    document.addEventListener('keypress', this.handleKeyPress);
+  },
+  beforeDestroy() {
+    this.stopTimer();
+    this.cleanup();
+    document.removeEventListener('keypress', this.handleKeyPress);
   },
   methods: {
     async startRecording() {
@@ -139,58 +146,19 @@ export default {
     },
     focusMessageInput() {
       this.$emit('focus-input');
+    },
+    handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        this.stopRecording();
+      }
     }
-  },
-  beforeDestroy() {
-    this.stopTimer();
-    this.cleanup();
   }
 };
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--modal-background);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.modal-content {
-  background-color: var(--modal-content-background);
-  padding: 20px 30px;
-  border-radius: 10px;
-  box-shadow: var(--modal-shadow);
-  min-width: 300px;
-}
-
-.modal-header {
-  margin-bottom: 15px;
-}
-
-.button-group {
-  display: flex;
-  justify-content: space-between;
-}
-
-button {
-  padding: 10px;
-  transition: var(--btn-transition);
-}
-
-button:active {
-  transform: scale(var(--btn-active-scale));
-  opacity: var(--btn-active-opacity);
-}
-
 .recording-symbol {
-  font-size: 18px;
+  font-size: 30px; /* Vergrößert das Aufnahmeicon */
   color: red;
   animation: pulse 1s infinite;
 }

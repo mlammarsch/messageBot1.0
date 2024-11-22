@@ -1,56 +1,60 @@
-<!-- components/MessageInput.vue -->
 <template>
-    <!-- Textnachrichteneingabe -->
+  <div class="message-input-container">
     <input
       type="text"
       v-model="localMessage"
       @input="emitInput"
-      placeholder="Type your message..."
-      class="message-input"
-      aria-label="Message Input"
+      placeholder="Type a message..."
+      class="form-control message-input rounded-circle"
+      aria-label="Type a message..."
     />
-  </template>
-  
-  <script>
-  export default {
-    props: {
-      modelValue: {
-        type: String,
-        default: ''
-      }
-    },
-    data() {
-      return {
-        localMessage: this.modelValue
-      };
-    },
-    watch: {
-      modelValue(newVal) {
-        this.localMessage = newVal;
-      }
-    },
-    methods: {
-      /**
-       * Emitiert das aktualisierte Nachrichtenmodell.
-       */
-      emitInput() {
-        this.$emit('update:modelValue', this.localMessage);
-      }
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    modelValue: {
+      type: String,
+      default: ''
     }
-  };
-  </script>
-  
-  <style scoped>
-  .message-input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    outline: none;
-    transition: border-color 0.3s;
+  },
+  data() {
+    return {
+      localMessage: this.modelValue
+    };
+  },
+  watch: {
+    modelValue(newVal) {
+      this.localMessage = newVal;
+    }
+  },
+  methods: {
+    /**
+     * Emitiert das aktualisierte Nachrichtenmodell.
+     */
+    emitInput() {
+      this.$emit('update:modelValue', this.localMessage);
+    }
   }
-  
-  .message-input:focus {
-    border-color: #007BFF;
-  }
-  </style>
+};
+</script>
+
+<style scoped>
+.message-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 50px; /* Abgerundete Ecken hinzugefügt */
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.message-input:focus {
+  border-color: #007BFF;
+}
+
+.message-input::placeholder {
+  color: #ccc;
+}
+</style>

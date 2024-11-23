@@ -1,55 +1,120 @@
 <template>
-  <!-- Modal zur Auswahl einer Kategorie, sichtbar wenn `isVisible` true und Kategorien vorhanden sind -->
+  <!-- Modal für die Kategorieverwaltung -->
   <div
-    v-if="isVisible && categories.length"
-    class="modal fade show d-block"
+    class="modal fade show"
+    style="display: block"
+    tabindex="-1"
+    role="dialog"
     aria-modal="true"
+    aria-labelledby="category-modal-title"
   >
     <div class="modal-dialog modal-fullscreen-xxl-down" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Wähle eine Kategorie aus</h5>
-          <!-- Schließen-Button für das Modal -->
+          <h4 id="category-modal-title" class="modal-title">Categories</h4>
           <button
             type="button"
             class="btn-close"
-            @click="close"
-            aria-label="Schließen"
+            aria-label="Close"
+            @click="closeModal"
           ></button>
         </div>
-        <div
-          class="modal-body d-flex flex-column"
-          tabindex="0"
-          @keyup.down.prevent="moveSelection('down')"
-          @keyup.up.prevent="moveSelection('up')"
-          @keydown.enter.prevent="confirmSelection"
-          ref="modalBody"
-        >
-          <ul class="list-group overflow-auto flex-grow-1" ref="categoryList">
-            <!-- Ein spezieller Eintrag für die Auswahl ohne Kategorie -->
-            <li
-              class="list-group-item d-flex justify-content-between align-items-center"
-              @click="handleSpecialItemClick"
-              :class="{
-                selected: currentIndex === -1,
-              }"
+        <div class="modal-body d-flex flex-column">
+          <div class="mb-3">
+            <!-- Eingabefeld für neue Kategorie -->
+            <input
+              type="text"
+              v-model="newCategory"
+              placeholder="Enter new category"
+              class="form-control mb-2 rounded-pill"
+              ref="categoryInput"
+              @keyup.enter="handleEnter"
+            />
+            <!-- Speichern neu hinzugefügter Kategorie -->
+            <button
+              class="btn btn-success rounded-pill w-100"
+              @click="addCategory"
             >
-              ohne Kategorie
-            </li>
-            <!-- Liste der Kategorien aus `categories` -->
+              Save
+            </button>
+            <div
+              v-if="errorMessage"
+              class="alert alert-warning mt-2"
+              role="alert"
+            >
+              {{ errorMessage }}
+            </div>
+          </div>
+          <ul class="list-group overflow-auto flex-grow-1" ref="categoryList">
+            <!-- Auflistung vorhandener Kategorien -->
             <li
-              v-for="(category, index) in categories"
+              v-for="category in sortedCategories"
               :key="category"
+              :class="{ highlight: category === lastAddedCategory }"
               class="list-group-item d-flex justify-content-between align-items-center"
-              @click="handleCategoryClick(category, index)"
-              :class="{
-                selected: currentIndex === index,
-              }"
             >
               {{ category }}
-              <!-- Anzeige der Kategorie -->
+              <button
+                class="btn btn-outline-danger btn-sm rounded-pill"
+                @click="confirmDeleteCategory(category)"
+              >
+                Delete
+              </button>
             </li>
           </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bestätigungsdialog für das Löschen einer Kategorie -->
+    <div
+      v-if="deleteDialogVisible"
+      class="modal show"
+      style="display: block"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="delete-confirmation-title"
+      aria-modal="true"
+    >
+      <div
+        class="modal-dialog modal-dialog-centered"
+        role="document"
+        @keydown.enter="deleteCategory"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 id="delete-confirmation-title" class="modal-title">
+              Delete Category
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Close"
+              @click="cancelDelete"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <!-- Bestätigungsnachricht für das Löschen -->
+            <p>Are you sure you want to delete this category?</p>
+          </div>
+          <div class="modal-footer">
+            <!-- Auswahlmöglichkeiten für den Bestätigungsdialog -->
+            <button
+              type="button"
+              class="btn btn-secondary"
+              @click="cancelDelete"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              ref="deleteButton"
+              @click="deleteCategory"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -57,88 +122,139 @@
 </template>
 
 <script>
-import { loadCategories } from "../services/storage.js"; // Importiere Funktion zum Laden der Kategorien
-
 export default {
-  props: ["isVisible"], // Eigenschaft, um die Sichtbarkeit des Modals zu steuern
   data() {
     return {
-      categories: loadCategories(), // Lädt die Kategorien
-      currentIndex: -1, // Setzt den Standardwert initial auf -1 für "ohne Kategorie"
+      newCategory: "", // Aktuelle Eingabe für neue Kategorie
+      categories: JSON.parse(localStorage.getItem("categories") || "[]"), // Kategorien aus dem Local Storage laden
+      errorMessage: "", // Fehlermeldung für Benutzer
+      lastAddedCategory: null, // Zuletzt hinzugefügte Kategorie, für Hervorhebung
+      deleteDialogVisible: false, // Sichtbarkeit des Löschdialogs
+      pendingDeleteCategory: null, // Zu löschende Kategorie, die im Bestätigungsdialog angezeigt wird
     };
   },
-  watch: {
-    isVisible(newValue) {
-      if (newValue) {
-        this.currentIndex = -1; // Beim Öffnen des Modals ist "ohne Kategorie" ausgewählt
-        this.$nextTick(() => {
-          this.$refs.modalBody.focus(); // Fokussiere den Modal-Inhalt, um Keyevents zu erfassen
-        });
-      }
+  computed: {
+    sortedCategories() {
+      // Kategorien alphabetisch sortieren
+      return [...this.categories].sort();
     },
   },
   methods: {
-    // Handler für den Klick auf den speziellen Eintrag "ohne Kategorie"
-    handleSpecialItemClick() {
-      this.selectCategory(null);
-    },
-
-    // Handler für den Klick auf eine Kategorie
-    handleCategoryClick(category, index) {
-      this.currentIndex = index;
-      this.selectCategory(category);
-    },
-
-    // Funktion zur Auswahl einer Kategorie
-    selectCategory(category) {
-      this.$emit("category-selected", category); // Emitte die ausgewählte Kategorie
-      this.close(); // Schließe das Modal
-    },
-
-    // Bewege die Auswahl nach oben oder unten
-    moveSelection(direction) {
-      const length = this.categories.length;
-      if (direction === "up") {
-        this.currentIndex = (this.currentIndex - 1 + length + 1) % (length + 1) - 1;
-      } else if (direction === "down") {
-        this.currentIndex = (this.currentIndex + 1 + length + 1) % (length + 1) - 1;
+    addCategory() {
+      const trimmedCategory = this.newCategory.trim();
+      if (!trimmedCategory) {
+        this.errorMessage = "";
+        this.focusInput();
+        return;
       }
-      this.scrollToSelected(); // Scrolle zu dem aktuell ausgewählten Element
+      if (this.categories.includes(trimmedCategory)) {
+        this.errorMessage = "This category already exists.";
+        this.clearErrorMessage();
+        return;
+      }
+      this.categories.push(trimmedCategory);
+      this.saveCategories();
+      this.newCategory = "";
+      this.errorMessage = "";
+      this.highlightNewCategory(trimmedCategory);
+      this.focusInput();
     },
+    handleEnter() {
+      // Behandelt Enter-Taste zum Hinzufügen der Kategorie
+      this.addCategory();
+    },
+    confirmDeleteCategory(category) {
+      // Bestätigungsdialog für Löschung anzeigen
+      this.pendingDeleteCategory = category;
+      this.deleteDialogVisible = true;
 
-    // Bestätigt die aktuelle Auswahl
-    confirmSelection() {
-      if (this.currentIndex === -1) {
-        this.handleSpecialItemClick();
-      } else {
-        this.selectCategory(this.categories[this.currentIndex]);
+      // Fokussiere den Delete-Button unmittelbar nach dem Öffnen des Dialogs
+      this.$nextTick(() => {
+        this.$refs.deleteButton.focus();
+      });
+    },
+    deleteCategory() {
+      // Kategorie aus der Liste entfernen und Daten speichern
+      if (this.pendingDeleteCategory) {
+        this.categories = this.categories.filter(
+          (cat) => cat !== this.pendingDeleteCategory
+        );
+        this.saveCategories();
+        this.cancelDelete();
       }
     },
-
-    // Schließt das Modal
-    close() {
-      this.$emit("update:isVisible", false); // Emitte die Schließanfrage
+    cancelDelete() {
+      // Löschen abbrechen und Bestätigungsdialog schließen
+      this.pendingDeleteCategory = null;
+      this.deleteDialogVisible = false;
+      this.focusInput(); // Fokus auf Eingabefeld zurück
     },
-
-    // Scrolle zu dem aktuell ausgewählten Element
-    scrollToSelected() {
+    saveCategories() {
+      // Speichern der Kategorien im Local Storage
+      localStorage.setItem("categories", JSON.stringify(this.categories));
+    },
+    focusInput() {
+      // Fokussiert das Eingabefeld
+      this.$nextTick(() => {
+        this.$refs.categoryInput.focus();
+      });
+    },
+    clearErrorMessage() {
+      // Entfernt die Fehlermeldung nach einem Timeout
+      setTimeout(() => {
+        this.errorMessage = "";
+        this.newCategory = "";
+        this.focusInput();
+      }, 2000);
+    },
+    closeModal() {
+      // Schließt das Modal und gibt Fokus an das Texteingabefeld der App zurück
+      this.$emit("close-modal");
+      this.focusInputInApp();
+    },
+    focusInputInApp() {
+      // Löst Event zum Setzen des Fokus im App-Komponenten
+      this.$emit("focus-chat-input");
+    },
+    highlightNewCategory(newCategory) {
+      // Neue Kategorie in der Liste hervorheben
+      this.lastAddedCategory = newCategory;
+      this.scrollToCategory(newCategory);
+      setTimeout(() => {
+        this.lastAddedCategory = null;
+      }, 2000);
+    },
+    scrollToCategory(category) {
+      // Scrollen zur neu hinzugefügten (hervorgehobenen) Kategorie
       this.$nextTick(() => {
         const list = this.$refs.categoryList;
-        const selectedItem =
-          this.currentIndex === -1 ? list.children[0] : list.children[this.currentIndex + 1];
-        if (selectedItem) {
-          selectedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        const index = this.sortedCategories.indexOf(category);
+        if (index > -1) {
+          const listItem = list.children[index];
+          listItem.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+            inline: "nearest",
+          });
         }
       });
     },
+  },
+  mounted() {
+    // Fokussieren des Eingabefeldes bei der Komponentenmaltung
+    this.focusInput();
   },
 };
 </script>
 
 <style scoped>
 .modal-fullscreen-xxl-down .modal-dialog {
-  max-width: 1024px;
+  max-width: 1024px; /* Maximalbreite des Modals */
   margin: auto;
+}
+
+.modal-fullscreen .modal-content {
+  height: 100vh;
 }
 
 .modal-body {
@@ -151,17 +267,16 @@ export default {
   overflow-y: auto;
 }
 
-.list-group-item {
-  cursor: pointer;
-  transition: border 0.3s, background-color 0.3s;
-  border-width: 1px;
-  border-style: solid;
-  border-color: transparent;
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
 }
 
-.selected {
-  border-color: rgb(202, 202, 202);
-  border-width: 2px;
-  background-color: lightgray;
+.btn-outline-danger:hover {
+  background-color: #f8d7da;
+}
+
+.highlight {
+  background-color: lightgray; /* Hervorhebung der zuletzt hinzugefügten Kategorie */
 }
 </style>

@@ -68,7 +68,7 @@ export default {
       this.selectCategory(category);
     },
     selectCategory(category) {
-      this.$emit("category-selected", category);
+      this.$emit('category-selected', category);
       setTimeout(() => {
         this.close();
       }, 500);
@@ -79,15 +79,13 @@ export default {
         if (this.currentIndex === -1) {
           this.currentIndex = length - 1;
         } else {
-          this.currentIndex =
-            this.currentIndex > 0 ? this.currentIndex - 1 : -1;
+          this.currentIndex = (this.currentIndex > 0) ? this.currentIndex - 1 : -1;
         }
       } else if (direction === "down") {
         if (this.currentIndex === length - 1) {
           this.currentIndex = -1;
         } else {
-          this.currentIndex =
-            this.currentIndex < length - 1 ? this.currentIndex + 1 : -1;
+          this.currentIndex = (this.currentIndex < length - 1) ? this.currentIndex + 1 : -1;
         }
       }
       this.scrollToSelected();
@@ -96,22 +94,17 @@ export default {
       if (this.currentIndex === -1) {
         this.handleSpecialItemClick();
       } else {
-        this.handleCategoryClick(
-          this.categories[this.currentIndex],
-          this.currentIndex
-        );
+        this.handleCategoryClick(this.categories[this.currentIndex], this.currentIndex);
       }
     },
     close() {
-      this.$emit("update:isVisible", false);
+      this.$emit('update:isVisible', false);
     },
     scrollToSelected() {
       this.$nextTick(() => {
         const list = this.$refs.categoryList;
         const selectedItem =
-          this.currentIndex === -1
-            ? list.children[0]
-            : list.children[this.currentIndex + 1];
+          this.currentIndex === -1 ? list.children[0] : list.children[this.currentIndex + 1];
         if (selectedItem) {
           selectedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }

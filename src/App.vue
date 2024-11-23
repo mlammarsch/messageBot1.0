@@ -1,15 +1,6 @@
 <template>
   <div class="app-container">
-    <!-- Warnmeldung für fehlende Webhook-URL -->
-    <div v-if="!webhookURL" class="alert alert-warning" role="alert">
-      Webhook URL is not set. Please configure it in settings.
-    </div>
-
-    <!-- Rückmeldung nach Nachrichtenvorgängen -->
-    <div v-if="responseMessage" class="alert alert-info" role="alert">
-      {{ responseMessage }}
-    </div>
-
+    
     <!-- Der Chat-Bereich mit Nachrichten-Liste -->
     <div class="chat-content" ref="chatContainer" role="log" aria-live="polite">
       <div 
@@ -36,6 +27,16 @@
           </template>
         </div>
       </div>
+    </div>
+
+    <!-- Warnmeldung für fehlende Webhook-URL -->
+    <div v-if="!webhookURL" class="alert alert-warning" role="alert">
+      Webhook URL is not set. Please configure it in settings.
+    </div>
+
+    <!-- Rückmeldung nach Nachrichtenvorgängen -->
+    <div v-if="responseMessage" class="alert alert-info" role="alert">
+      {{ responseMessage }}
     </div>
 
     <!-- Eingabebereich für Text und Audiomeldungen -->
@@ -98,25 +99,37 @@
       @focus-input="focusMessageInput"
     />
 
-    <!-- Einstellungen-Button -->
-    <button 
-      @click="openSettings" 
-      class="settings-button btn btn-link position-absolute top-0 end-0 me-2 mt-2" 
-      aria-label="Open Settings"
-      role="button"
-    >
-      <i class="bi bi-gear" aria-hidden="true"></i>
-    </button>
+    <!-- Settings Buttons -->
+    <div class="container position-relative text-center">
+      <i 
+        @click="openSettings" 
+        class="bi bi-gear position-absolute" 
+        aria-label="Open Settings"
+        role="button"
+        style="top: 10px; right: 10px; font-size: 24px; cursor: pointer; color: grey;"
+      ></i>
 
-    <!-- Kategorie-Button -->
-    <button 
-      @click="openCategoryModal" 
-      class="category-button btn btn-link position-absolute top-0 end-0 me-2 mt-2" 
-      aria-label="Open Category Dialog"
-      role="button"
-    >
-      <i class="bi bi-tags" aria-hidden="true"></i>
-    </button>
+      <i 
+        @click="openCategoryModal" 
+        class="bi bi-tags position-absolute" 
+        aria-label="Open Category Dialog"
+        role="button"
+        style="top: 70px; right: 10px; font-size: 24px; cursor: pointer; color: grey;"
+      ></i>
+    </div>
+
+    <!-- Einstellungen-Button -->
+    <div class="d-flex">
+      <div class="row align-items-end">
+        
+      </div>
+    </div>
+    <div class="row">
+      <!-- Kategorie-Button -->
+      <div class="col align-items-end">
+        
+      </div>
+    </div>
 
     <!-- Webhook-Einstellungskomponente -->
     <WebhookSettings 

@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Deine App-Name',
+        name: 'Webhook Bot',
         short_name: 'App',
         theme_color: '#4DBA87',
         background_color: '#ffffff',

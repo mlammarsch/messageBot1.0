@@ -1,67 +1,106 @@
 <template>
+  <!-- Hauptcontainer der Applikation -->
   <div class="app-container">
-    
-    <!-- Der Chat-Bereich mit Nachrichten-Liste -->
+    <!-- **Chat-Bereich** für Nachrichten -->
     <div class="chat-content" ref="chatContainer" role="log" aria-live="polite">
-      <div 
-        v-for="message in messages" 
+      <!-- Wiederholt Nachrichten in `messages` Array -->
+      <div
+        v-for="message in messages"
         :key="message.timestamp"
-        class="chat-bubble"
+        class="chat-bubble p-3 mb-3 border"
         role="article"
         aria-labelledby="message-timestamp"
+        style="
+          max-width: 60%;
+          background-color: rgba(241, 241, 241, 0.85);
+          border-radius: 1rem;
+          position: relative;
+        "
       >
-        <div class="message-timestamp" id="message-timestamp">
+        <!-- Zeigt den Zeitstempel der Nachricht an -->
+        <div
+          class="message-timestamp mb-1"
+          id="message-timestamp"
+          style="font-size: 0.85rem; color: #666"
+        >
           <strong>{{ formatTimestamp(message.timestamp) }}</strong>
         </div>
-        <div class="message-status">
-          <span :class="{'text-success': message.success, 'text-danger': !message.success}">
-            {{ message.success ? 'Message sent successfully' : 'Failed to send message' }}
+        <!-- Status der Nachricht, abhängig davon ob erfolgreich gesendet -->
+        <div class="message-status mb-2" style="font-size: 0.9rem">
+          <span
+            :class="{
+              'text-success': message.success,
+              'text-danger': !message.success,
+            }"
+          >
+            {{
+              message.success
+                ? "Message sent successfully"
+                : "Failed to send message"
+            }}
           </span>
         </div>
+        <!-- Detailinformationen der Nachricht -->
         <div>
-          {{ message.text }}
-          <template v-if="message.hasAudio">
-            <!-- Symbole für Audio-Anhang -->
-            <i class="bi bi-paperclip" aria-hidden="true"></i>
-            <i class="bi bi-speaker" aria-hidden="true"></i>
-          </template>
+          <div class="mb-1" style="color: #777">
+            <!-- Beschriftung und Inhalt der Nachricht -->
+            <em>Text:</em>&nbsp;&nbsp;<span style="color: #000">{{
+              message.text
+            }}</span
+            ><br />
+            <em>Kategorie:</em>&nbsp;&nbsp;<span style="color: #000">{{
+              message.category || "Keine Kategorie"
+            }}</span>
+          </div>
+          <!-- Anzeige von Anhang-Symbolen bei vorhandenem Audio -->
+          <div
+            v-if="message.hasAudio"
+            class="d-flex justify-content-end"
+            style="margin-top: 0.5rem"
+          >
+            <i class="bi bi-paperclip ml-2" aria-hidden="true"></i>
+            <i class="bi bi-soundwave ml-2" aria-hidden="true"></i>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Warnmeldung für fehlende Webhook-URL -->
+    <!-- Warnung, wenn Webhook-URL fehlt -->
     <div v-if="!webhookURL" class="alert alert-warning" role="alert">
       Webhook URL is not set. Please configure it in settings.
     </div>
 
-    <!-- Rückmeldung nach Nachrichtenvorgängen -->
+    <!-- **Feedbackmeldung** nach Nachrichtentransaktionen -->
     <div v-if="responseMessage" class="alert alert-info" role="alert">
       {{ responseMessage }}
     </div>
 
-    <!-- Eingabebereich für Text und Audiomeldungen -->
+    <!-- Eingabefläche für Nachrichten -->
     <div class="input-area p-2 border-top bg-light" ref="inputArea">
       <div class="d-flex align-items-center mb-2">
-        <button 
-          class="btn btn-outline-secondary me-2 rounded-pill" 
-          @click="startRecording" 
-          aria-label="Record Audio"
-          role="button"
-        >
-          <i class="bi bi-mic-fill" aria-hidden="true"></i>
-        </button>
-        <!-- Nachrichteneingabe -->
-        <input 
-          ref="messageInput" 
-          type="text" 
-          v-model="message" 
-          placeholder="Type a message" 
-          class="form-control mx-2 rounded-pill" 
+        <!-- Eingabefeld für Nachrichtentext -->
+        <input
+          ref="messageInput"
+          type="text"
+          v-model="message"
+          placeholder="Type a message"
+          class="form-control mx-1 rounded-pill flex-grow-1"
           aria-label="Nachricht eingeben"
         />
-        <button 
-          @click="sendMessage" 
-          class="btn btn-primary btn-send rounded-pill" 
+
+        <!-- Icon zum Start der Audioaufnahme -->
+        <i
+          class="bi bi-mic-fill mx-2 text-muted"
+          @click="startRecording"
+          aria-label="Record Audio"
+          role="img"
+          style="cursor: pointer"
+        ></i>
+
+        <!-- Button zum Senden der Nachricht -->
+        <button
+          @click="sendMessage"
+          class="btn btn-primary btn-send rounded-pill mx-1"
           :class="{ 'btn-disabled': isSendDisabled }"
           aria-label="Send Message"
           role="button"
@@ -71,17 +110,17 @@
         </button>
       </div>
 
-      <!-- Audiowiedergabebereich -->
+      <!-- Audiosteuerung zur Wiedergabe -->
       <div v-if="audio" class="audio-control d-flex align-items-center mb-2">
-        <audio 
-          :src="audioURL" 
-          controls 
-          class="flex-grow-1 me-2" 
+        <audio
+          :src="audioURL"
+          controls
+          class="flex-grow-1 me-2"
           aria-label="Audio abspielen"
         ></audio>
-        <button 
-          class="btn btn-outline-danger btn-delete" 
-          @click="deleteAudio" 
+        <button
+          class="btn btn-outline-danger btn-delete"
+          @click="deleteAudio"
           aria-label="Delete Audio"
           role="button"
         >
@@ -90,60 +129,68 @@
       </div>
     </div>
 
-    <!-- Audio-Rekorder-Modal Darstellung -->
-    <AudioRecorderModal 
-      v-if="showAudioRecorder" 
-      @audio-ready="setAudio" 
-      @error="setError" 
+    <!-- Modal zum Aufnehmen von Audio -->
+    <AudioRecorderModal
+      v-if="showAudioRecorder"
+      @audio-ready="setAudio"
+      @error="setError"
       @close-recorder="showAudioRecorder = false"
       @focus-input="focusMessageInput"
     />
 
-    <!-- Settings Buttons -->
+    <!-- Modal zur Auswahl der Kategorie -->
+    <CategorySelect
+      v-if="showCategorySelect"
+      :isVisible="showCategorySelect"
+      @update:isVisible="showCategorySelect = $event"
+      @category-selected="confirmSendMessage"
+    />
+
+    <!-- Einstellungsbutton -->
     <div class="container position-relative text-center">
-      <i 
-        @click="openSettings" 
-        class="bi bi-gear position-absolute" 
+      <i
+        @click="openSettings"
+        class="bi bi-gear position-absolute"
         aria-label="Open Settings"
         role="button"
-        style="top: 10px; right: 10px; font-size: 24px; cursor: pointer; color: grey;"
+        style="
+          top: 10px;
+          right: 10px;
+          font-size: 24px;
+          cursor: pointer;
+          color: grey;
+        "
       ></i>
 
-      <i 
-        @click="openCategoryModal" 
-        class="bi bi-tags position-absolute" 
+      <!-- Button zum Öffnen des Kategoriemodal -->
+      <i
+        @click="openCategoryModal"
+        class="bi bi-tags position-absolute"
         aria-label="Open Category Dialog"
         role="button"
-        style="top: 70px; right: 10px; font-size: 24px; cursor: pointer; color: grey;"
+        style="
+          top: 70px;
+          right: 10px;
+          font-size: 24px;
+          cursor: pointer;
+          color: grey;
+        "
       ></i>
     </div>
 
-    <!-- Einstellungen-Button -->
-    <div class="d-flex">
-      <div class="row align-items-end">
-        
-      </div>
-    </div>
-    <div class="row">
-      <!-- Kategorie-Button -->
-      <div class="col align-items-end">
-        
-      </div>
-    </div>
-
-    <!-- Webhook-Einstellungskomponente -->
-    <WebhookSettings 
-      :isOpen="isSettingsOpen" 
-      :currentUrl="webhookURL" 
+    <!-- Komponente zur Konfiguration der Webhook-URL -->
+    <WebhookSettings
+      :isOpen="isSettingsOpen"
+      :currentUrl="webhookURL"
       @webhook-updated="updateWebhookURL"
       @webhook-cleared="clearWebhookURL"
-      @clear-messages="clearMessages" 
+      @clear-messages="clearMessages"
       @close-settings="closeSettings"
     />
 
-    <!-- Category Modal -->
-    <CategoryModal 
-      v-if="showCategoryModal" 
+    <!-- Modal zur Auswahl der Kategorie -->
+    <CategoryModal
+      v-if="showCategoryModal"
       @close-modal="closeCategoryModal"
       @focus-chat-input="focusMessageInput"
     />
@@ -151,346 +198,379 @@
 </template>
 
 <script>
-import AudioRecorderModal from './components/AudioRecorderModal.vue';
-import WebhookSettings from './components/WebhookSettings.vue';
-import CategoryModal from './components/CategoryModal.vue';
-import { sendToWebhook } from './services/api';
-import { loadWebhookURL, saveWebhookURL, saveMessages, loadMessages } from './services/storage.js';
+import AudioRecorderModal from "./components/AudioRecorderModal.vue"; // Import des AudioRecorder Modals
+import WebhookSettings from "./components/WebhookSettings.vue"; // Import der Webhook Einstellungen
+import CategoryModal from "./components/CategoryModal.vue"; // Import des Kategoriemodals
+import CategorySelect from "./components/CategorySelect.vue"; // Import der Kategori Auswahl
+import { sendToWebhook } from "./services/api"; // API-Service zum Senden von Daten
+import {
+  loadWebhookURL,
+  saveWebhookURL,
+  saveMessages,
+  loadMessages,
+} from "./services/storage.js"; // Speicherverwaltungsfunktionen
+import { loadCategories } from "./services/storage.js"; // Funktion zum Laden der Kategorien
 
 export default {
   components: {
-    AudioRecorderModal,
-    WebhookSettings,
-    CategoryModal,
+    AudioRecorderModal, // Registrierung des AudioRecorder Modals
+    WebhookSettings, // Registrierung der Webhook Einstellungen
+    CategoryModal, // Registrierung des Kategoriemodals
+    CategorySelect, // Registrierung der Kategori Auswahl
   },
   data() {
     return {
-      message: '', // Der aktuelle Inhalt der Textnachricht, die der Benutzer eingegeben hat
-      audio: null, // Das aktuelle Audioblatt, das der Benutzer aufgenommen hat
-      messages: loadMessages() || [], // Geladene Nachrichten aus dem Local Storage
-      webhookURL: loadWebhookURL() || '', // Geladene Webhook-URL aus dem Local Storage
-      responseMessage: '', // Rückantwortnachricht, um dem Benutzer den Status einer Aktion mitzuteilen
-      isSending: false, // Status, ob eine Nachricht gesendet wird
-      isSettingsOpen: false, // Status, ob das Einstellungspanel offen ist
-      showAudioRecorder: false, // Status, ob das Audio-Rekorder-Modal geöffnet ist
-      showCategoryModal: false // Status, ob das Kategoriedialog geöffnet ist
+      message: "", // Aktuelle Nachricht des Benutzers
+      audio: null, // Aktuelle Audioaufnahme
+      messages: loadMessages() || [], // Geladene Nachrichten oder leeres Array
+      webhookURL: loadWebhookURL() || "", // Geladene Webhook-URL
+      responseMessage: "", // Nachricht zur Rückmeldung nach Aktionen
+      isSending: false, // Status, ob Nachricht gesendet wird
+      isSettingsOpen: false, // Status, ob Einstellungen offen sind
+      showAudioRecorder: false, // Status für das AudioRecorder Modal
+      showCategoryModal: false, // Status für das Kategoriemodal
+      showCategorySelect: false, // Status für die Kategori Auswahl
     };
   },
   computed: {
-    // Liefert eine URL des Audios, damit es im Audio-Tag abgespielt werden kann
+    // Generiere URL für die Audioaufnahme
     audioURL() {
-      return this.audio ? URL.createObjectURL(this.audio) : '';
+      return this.audio ? URL.createObjectURL(this.audio) : "";
     },
-    // Ermittelt, ob der Sende-Button deaktiviert werden soll
+    // Bestimmt, ob der Senden-Button deaktiviert ist
     isSendDisabled() {
-      return this.isSending || (!this.message.trim() && !this.audio) || !this.webhookURL;
-    }
+      return (
+        this.isSending || // Senden ist aktiv
+        (!this.message.trim() && !this.audio) || // Keine Nachricht und kein Audio
+        !this.webhookURL // Webhook-URL ist nicht gesetzt
+      );
+    },
   },
   methods: {
-    // Sendet die Nachricht zum konfigurierten Webhook
+    // Hauptmethode zum Senden der Nachricht
     async sendMessage() {
-      // Zuerst überprüfen, ob eine Webhook-URL existiert
-      if (!this.webhookURL) {
-        this.responseMessage = "Error: No Webhook URL set.";
+      const categories = loadCategories(); // Lade vorhandene Kategorien
+      // Wenn Kategorien vorhanden sind, öffne die Auswahl
+      if (categories.length > 0) {
+        this.showCategorySelect = true;
         return;
+      } else {
+        // ansonsten sende die Nachricht direkt
+        this.confirmSendMessage();
       }
-      // Überprüft, ob eine Nachricht gesendet wird und ob eine Eingabe oder ein Audio vorliegt
-      if (this.isSending || (!this.message.trim() && !this.audio)) return;
-
-      this.isSending = true;
-      const timestamp = new Date().toISOString(); // Aktueller Zeitstempel im ISO-Format
-      const os = this.getOS(); // Betriebssystem des Benutzers ermitteln
-      const browser = this.getBrowser(); // Browser des Benutzers ermitteln
-
+    },
+    // Bestätigt das Senden der Nachricht mit Kategorie
+    confirmSendMessage(category) {
+      this.isSending = true; // Setzte den Status auf "sendend"
       const data = {
-        text: this.message.trim() || 'n/a',
-        audio: this.audio,
-        timestamp: new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin', hour12: false }),
-        os: os,
-        browser: browser,
-        audioAttached: !!this.audio,
-        imageAttached: false
+        text: this.message.trim() || "n/a", // Text der Nachricht
+        audio: this.audio, // Audio-Datei (falls vorhanden)
+        category: category || "Uncategorized", // Kategorie, Standardwert ist "Uncategorized"
+        timestamp: new Date().toLocaleString("de-DE", {
+          // Aktueller Zeitstempel
+          timeZone: "Europe/Berlin",
+          hour12: false,
+        }),
+        os: this.getOS(), // Betriebssystem des Benutzers
+        browser: this.getBrowser(), // Browser des Benutzers
+        audioAttached: !!this.audio, // Ob Audio angehängt ist
+        imageAttached: false, // Momentan keine Bildanhänge
       };
 
-      try {
-        // Senden der Nachricht an den Webhook
-        const response = await sendToWebhook(this.webhookURL, data);
-        if (response.status === 200) {
-          this.storeMessage(true); // Erfolgsmeldung speichert die gesendete Nachricht
-          this.clearInputs(); // Klare die Eingabe- und Audiobereiche
-          this.scrollToBottom(); // Scroll zum Ende der Chat-Nachrichten
-        } else {
-          this.responseMessage = `Error: Server antwortete mit Status ${response.status}.`;
-        }
-      } catch (error) {
-        this.storeMessage(false); // Speichern der gescheiterten Nachricht
-        this.responseMessage = "Error: Nachricht konnte nicht gesendet werden.";
-      } finally {
-        this.isSending = false; // Zurücksetzen des Sende-Status
-        saveMessages(this.messages); // Speichern der Nachrichten im Local Storage
-        this.$nextTick(() => {
-          this.$refs.messageInput.focus(); // Fokussiert das Texteingabefeld beim nächsten DOM-Update
-          this.adjustChatLayout(); // Anpassung des Chat-Layouts
+      // Senden der Daten an den Webhook
+      sendToWebhook(this.webhookURL, data)
+        .then((response) => {
+          if (response.status === 200) {
+            // Nachricht erfolgreich gesendet
+            this.storeMessage(true, category);
+            this.clearInputs(); // Eingabefelder zurücksetzen
+            this.scrollToBottom(); // Zum Ende des Chats scrollen
+          } else {
+            // Fehlerhafte Antwort vom Server
+            this.responseMessage = `Error: Server antwortete mit Status ${response.status}.`;
+          }
+        })
+        .catch(() => {
+          // Fehler beim Senden
+          this.storeMessage(false, category);
+          this.responseMessage =
+            "Error: Nachricht konnte nicht gesendet werden.";
+        })
+        .finally(() => {
+          this.isSending = false; // Setze den Sende-Status zurück
+          saveMessages(this.messages); // Speichere Nachrichten
+          this.$nextTick(() => {
+            this.focusMessageInput(); // Fokussiere Eingabefeld
+            this.adjustChatLayout(); // Passe das Layout an
+          });
         });
-      }
     },
-    // Speichert die Nachricht in der Nachrichtenliste und im Speicher
-    storeMessage(success) {
+    // Speichert eine neue Nachricht im Nachrichten-Array
+    storeMessage(success, category) {
       const newMessage = {
-        timestamp: new Date(),
-        success: success,
-        text: this.message.trim() || 'n/a',
-        hasAudio: Boolean(this.audio)
+        timestamp: new Date(), // Aktueller Zeitstempel
+        success: success, // Erfolg oder Fehlerstatus
+        text: this.message.trim() || "n/a", // Text der Nachricht
+        hasAudio: Boolean(this.audio), // Flag, ob Audio vorhanden ist
+        category: category, // Kategorie der Nachricht
       };
-      this.messages.unshift(newMessage); // Neue Nachricht oben hinzufügen
+      this.messages.unshift(newMessage); // Füge die Nachricht oben ein
     },
-    // Formatieren des Zeitstempels in ein gut lesbares Format
+    // Formatiert den Zeitstempel für die Anzeige
     formatTimestamp(timestamp) {
-      if (!timestamp) return '';
-      const options = { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit',
-        timeZone: 'Europe/Berlin' 
+      if (!timestamp) return ""; // Gebe leer zurück, wenn kein Zeitstempel vorhanden
+      const options = {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "Europe/Berlin", // Zeitzone
       };
-      return new Intl.DateTimeFormat('de-DE', options).format(new Date(timestamp));
+      return new Intl.DateTimeFormat("de-DE", options).format(
+        new Date(timestamp) // Formatiere den Zeitstempel
+      );
     },
-    // Ermittelt das Betriebssystem basierend auf dem User-Agent
+    // Bestimmt das Betriebssystem des Benutzers
     getOS() {
       const userAgent = window.navigator.userAgent;
-      if (/Windows NT 10.0/.test(userAgent)) return 'Windows 10';
-      if (/Windows NT 11.0/.test(userAgent)) return 'Windows 11';
-      if (/Mac OS X/.test(userAgent)) return 'macOS';
-      if (/Linux/.test(userAgent)) return 'Linux';
-      if (/iPhone|iPad|iPod/.test(userAgent)) return 'iOS';
-      if (/Android/.test(userAgent)) return 'Android';
-      return 'Unknown OS';
+      if (/Windows NT 10.0/.test(userAgent)) return "Windows 10";
+      if (/Windows NT 11.0/.test(userAgent)) return "Windows 11";
+      if (/Mac OS X/.test(userAgent)) return "macOS";
+      if (/Linux/.test(userAgent)) return "Linux";
+      if (/iPhone|iPad|iPod/.test(userAgent)) return "iOS";
+      if (/Android/.test(userAgent)) return "Android";
+      return "Unknown OS"; // Unbekanntes OS
     },
-    // Ermittelt den Browser basierend auf dem User-Agent
+    // Bestimmt den Browser des Benutzers
     getBrowser() {
       const userAgent = window.navigator.userAgent;
-      if (/Firefox\//.test(userAgent)) return 'Firefox';
-      if (/Chrome\//.test(userAgent) && /Edg\//.test(userAgent)) return 'Edge';
-      if (/Chrome\//.test(userAgent)) return 'Chrome';
-      if (/Safari\//.test(userAgent) && !/Chrome\//.test(userAgent)) return 'Safari';
-      return 'Unknown Browser';
+      if (/Firefox\//.test(userAgent)) return "Firefox";
+      if (/Chrome\//.test(userAgent) && /Edg\//.test(userAgent)) return "Edge";
+      if (/Chrome\//.test(userAgent)) return "Chrome";
+      if (/Safari\//.test(userAgent) && !/Chrome\//.test(userAgent))
+        return "Safari";
+      return "Unknown Browser"; // Unbekannter Browser
     },
-    // Löschen der Nachrichteneingabe und Audioaufnahme
+    // Setzt die Eingabefelder zurück
     clearInputs() {
-      this.message = '';
-      this.audio = null;
+      this.message = ""; // Leert das Nachrichteneingabefeld
+      this.audio = null; // Entfernt das Audio
     },
-    // Öffnen des Einstellungsdialogs
+    // Öffnet die Einstellungen
     openSettings() {
-      this.isSettingsOpen = true;
+      this.isSettingsOpen = true; // Setzt den Status auf "offen"
     },
-    // Schließen des Einstellungsdialogs
+    // Schließt die Einstellungen
     closeSettings() {
-      this.isSettingsOpen = false;
+      this.isSettingsOpen = false; // Setzt den Status auf "geschlossen"
     },
-    // Öffnen des Kategoriedialogs
+    // Öffnet das Kategoriemodal
     openCategoryModal() {
-      this.showCategoryModal = true;
+      this.showCategoryModal = true; // Setzt den Status für das Modal auf "offen"
     },
-    // Schließen des Kategoriedialogs
+    // Schließt das Kategoriemodal
     closeCategoryModal() {
-      this.showCategoryModal = false;
-      this.focusMessageInput();
+      this.showCategoryModal = false; // Setzt den Status auf "geschlossen"
+      this.focusMessageInput(); // Fokussiert das Eingabefeld
     },
-    // Aktualisieren der Webhook-URL und Speicherung dieser
+    // Aktualisiert die Webhook-URL
     updateWebhookURL(newURL) {
-      this.webhookURL = newURL;
-      saveWebhookURL(newURL); // Speichern der neuen URL im Local Storage
-      this.responseMessage = "Webhook URL erfolgreich aktualisiert!";
+      this.webhookURL = newURL; // Setzt die neue URL
+      saveWebhookURL(newURL); // Speichert die URL
+      this.responseMessage = "Webhook URL erfolgreich aktualisiert!"; // Rückmeldung
       setTimeout(() => {
-        this.responseMessage = ''; // Entfernen der Bestätigungsmeldung nach 4 Sekunden
+        this.responseMessage = ""; // Löscht die Rückmeldung nach 4 Sekunden
       }, 4000);
     },
-    // Löscht die aktuelle Webhook-URL
+    // Löscht die Webhook-URL
     clearWebhookURL() {
-      this.webhookURL = '';
-      saveWebhookURL(''); // Löschen der URL aus dem Local Storage
-      this.responseMessage = "Webhook URL gelöscht!";
+      this.webhookURL = ""; // Setzt die URL auf leer
+      saveWebhookURL(""); // Leert die gespeicherte URL
+      this.responseMessage = "Webhook URL gelöscht!"; // Rückmeldung
       setTimeout(() => {
-        this.responseMessage = ''; // Entfernen der Bestätigungsmeldung nach 4 Sekunden
+        this.responseMessage = ""; // Löscht die Rückmeldung nach 4 Sekunden
       }, 4000);
     },
-    // Setzt das Audioobjekt und schließt den Audiorecorder
+    // Setzt die Audioaufnahme
     setAudio(audioBlob) {
-      this.audio = audioBlob;
-      this.showAudioRecorder = false;
+      this.audio = audioBlob; // Setzt die Audio-Blob
+      this.showAudioRecorder = false; // Schließt das Aufnahme-Modal
     },
-    // Löscht das angehängte Audio
+    // Löscht die Audioaufnahme
     deleteAudio() {
-      this.audio = null;
-      this.focusMessageInput(); // Fokussiert wieder das Texteingabefeld
+      this.audio = null; // Setzt das Audio zurück
+      this.focusMessageInput(); // Fokussiert das Eingabefeld
     },
-    // Setzt eine Fehlernachricht und zeigt sie an
+    // Setzt die Fehlernachricht
     setError(error) {
-      this.responseMessage = error;
+      this.responseMessage = error; // Speichert die Fehlernachricht
     },
-    // Öffnen des Audiorecorders
+    // Startet die Audioaufnahme
     startRecording() {
-      this.showAudioRecorder = true;
+      this.showAudioRecorder = true; // Öffnet das AudioRecorder Modal
     },
-    // Löscht alle Nachrichten und speichert diesen Zustand
+    // Löscht alle Nachrichten
     clearMessages() {
-      this.messages = [];
-      saveMessages(this.messages);
+      this.messages = []; // Setzt die Nachrichtenliste zurück
+      saveMessages(this.messages); // Speichert das leere Array
     },
-    // Scrollt zum Ende des Chat-Inhalts
+    // Scrollt zum Ende des Chatbereichs
     scrollToBottom() {
       this.$nextTick(() => {
-        const container = this.$refs.chatContainer;
-        container.scrollTop = container.scrollHeight;
+        const container = this.$refs.chatContainer; // Referenz auf den Chat-Container
+        container.scrollTop = container.scrollHeight; // Scrollt nach unten
       });
     },
-    // Passt das Layout des Chats an, um Höhe von Eingabeelementen zu berücksichtigen
+    // Passt das Layout des Chats an
     adjustChatLayout() {
-      const container = this.$refs.chatContainer;
-      container.style.paddingBottom = this.$refs.inputArea.clientHeight + 'px';
+      const container = this.$refs.chatContainer; // Referenz auf den Chat-Container
+      container.style.paddingBottom = this.$refs.inputArea.clientHeight + "px"; // Setzt Padding
     },
     // Fokussiert das Eingabefeld
     focusMessageInput() {
       this.$nextTick(() => {
-        this.$refs.messageInput.focus();
+        this.$refs.messageInput.focus(); // Fokussiert das Nachrichteneingabefeld
       });
     },
-    // Behandelt Tasteneingaben, z.B. Enter drücken
+    // Behandelt die Tasteneingabe für das Senden der Nachricht
     handleKeyPress(event) {
-      if (event.key === 'Enter' && !this.showAudioRecorder && !this.isSettingsOpen && !this.isSendDisabled) {
-        this.sendMessage();
+      if (
+        event.key === "Enter" && // Wenn die Enter-Taste gedrückt wird
+        !this.showAudioRecorder && // wenn kein Audio-Rekorder offen ist
+        !this.isSettingsOpen && // und keine Einstellungen offen sind
+        !this.isSendDisabled // und die Sendefunktion nicht deaktiviert ist
+      ) {
+        this.sendMessage(); // Sende die Nachricht
       }
-    }
+    },
   },
-  // Beim Mounten der Komponente durchgeführte Aktionen
   mounted() {
-    const savedURL = loadWebhookURL();
+    const savedURL = loadWebhookURL(); // Lade die gespeicherte URL
     if (savedURL) {
-      this.webhookURL = savedURL;
+      this.webhookURL = savedURL; // Setze die Webhook-URL
     }
     this.$nextTick(() => {
-      this.scrollToBottom(); // Initialisiere Scrollposition
-      this.adjustChatLayout(); // Initialisiere Layoutanpassungen
+      this.scrollToBottom(); // Scrolle zum Ende
+      this.adjustChatLayout(); // Passe das Layout an
     });
-    document.addEventListener('keypress', this.handleKeyPress);
+    document.addEventListener("keypress", this.handleKeyPress); // Füge Eventlistener für Tasteneingabe hinzu
   },
-  // Bereinigung bei der Zerstörung der Komponente
   beforeDestroy() {
-    document.removeEventListener('keypress', this.handleKeyPress);
-  }
+    document.removeEventListener("keypress", this.handleKeyPress); // Entferne den Eventlistener
+  },
 };
 </script>
 
 <style>
 /* Stile für Warnmeldungen und allgemeines Design */
 .alert {
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 5px;
+  margin: 10px 0; /* Abstand oben und unten */
+  padding: 10px; /* Innenabstand */
+  border-radius: 5px; /* Abgerundete Ecken */
 }
 
 /* Farben für alert-Komponenten */
 .alert-warning {
-  background-color: #ffeb3b;
-  color: #1a1a1a;
+  background-color: #ffeb3b; /* Hintergrundfarbe für Warnmeldungen */
+  color: #1a1a1a; /* Textfarbe */
 }
 
 .alert-info {
-  background-color: #cce5ff;
-  color: #004085;
+  background-color: #cce5ff; /* Hintergrundfarbe für Informationsmeldungen */
+  color: #004085; /* Textfarbe */
 }
 
 /* Hauptkontainer-Stile */
 .app-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-  background-color: #e0f7e9;
+  display: flex; /* Flexbox-Layout */
+  flex-direction: column; /* Spaltenanordnung */
+  height: 100vh; /* Höhe: 100% des Viewports */
+  overflow: hidden; /* Verhindert Überlauf */
+  position: relative; /* Relativen Positionierungskontext */
+  background-color: #e0f7e9; /* Hintergrundfarbe */
 }
 
 /* Stile für den Chatinhalt */
 .chat-content {
-  position: absolute;
-  top: 0;
-  bottom: 00px; /* Höhe der Eingabeleiste beachten */
-  width: 100%;
-  overflow-y: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column-reverse;
-  scroll-behavior: smooth;
+  position: absolute; /* Absolute Positionierung */
+  top: 0; /* Obere Kante */
+  bottom: 0; /* Untere Kante beachten */
+  width: 100%; /* Volle Breite */
+  overflow-y: auto; /* Vertikaler Überlauf wird scrollbar */
+  padding: 10px; /* Innenabstand */
+  display: flex; /* Flexbox für den Chatinhalt */
+  flex-direction: column-reverse; /* Neue Nachrichten werden unten angezeigt */
+  scroll-behavior: smooth; /* Sanfte Scrollbewegung */
 }
 
 /* Stile für Chatblasen */
 .chat-bubble {
-  background-color: var(--chat-bubble-background);
-  border-radius: var(--chat-bubble-border-radius);
-  padding: var(--chat-bubble-padding);
-  max-width: 90%;
-  margin-top: var(--chat-bubble-margin);
+  background-color: var(
+    --chat-bubble-background
+  ); /* Hintergrundfarbe für Chatblasen */
+  border-radius: var(--chat-bubble-border-radius); /* Abgerundete Ecken */
+  padding: var(--chat-bubble-padding); /* Innenabstand */
+  max-width: 90%; /* Maximale Breite */
+  margin-top: var(--chat-bubble-margin); /* Abstand nach oben */
   margin-bottom: 0; /* Entfernt den unteren Abstand */
-  align-self: flex-start;
+  align-self: flex-start; /* Ausrichtung nach links */
 }
 
 .message-timestamp {
-  font-size: 0.8em;
-  color: #6c757d;
+  font-size: 0.8em; /* Schriftgröße für Zeitstempel */
+  color: #6c757d; /* Grau für Zeitstempel */
 }
 
 .message-status {
-  margin-bottom: 5px;
+  margin-bottom: 5px; /* Abstand unten */
 }
 
 .audio-control {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
+  margin-top: 10px; /* Abstand oben für Audiosteuerung */
+  display: flex; /* Flexbox für Audiosteuerung */
+  align-items: center; /* Zentrieren der Inhalte */
 }
 
 /* Eingabebereich-Stile */
 .input-area {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background-color: #ffffff;
-  border-top: solid 1px rgba(0,0,0,.125);
-  z-index: 1;
+  position: absolute; /* Absolute Positionierung */
+  bottom: 0; /* Unten ausrichten */
+  width: 100%; /* Volle Breite */
+  background-color: #ffffff; /* Hintergrundfarbe */
+  border-top: solid 1px rgba(0, 0, 0, 0.125); /* Obere Border */
+  z-index: 1; /* Z-Index für Überlagerungen */
 }
 
 .settings-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 2;
+  position: absolute; /* Absolute Positionierung */
+  top: 10px; /* Abstand oben */
+  right: 10px; /* Abstand rechts */
+  z-index: 2; /* Z-Index für Überlagerungen */
 }
 
 .category-button {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 2;
+  position: absolute; /* Absolute Positionierung */
+  top: 10px; /* Abstand oben */
+  left: 10px; /* Abstand links */
+  z-index: 2; /* Z-Index für Überlagerungen */
 }
 
 /* Button-Transition bei Aktivierung */
 button {
-  transition: var(--btn-transition);
+  transition: var(--btn-transition); /* Übergangsanimation */
 }
 
 button:active {
-  transform: scale(var(--btn-active-scale));
-  opacity: var(--btn-active-opacity);
+  transform: scale(var(--btn-active-scale)); /* Verkleinern bei Aktivierung */
+  opacity: var(--btn-active-opacity); /* Opazität bei Aktivierung */
 }
 
 .btn-primary:disabled,
 .btn-disabled {
-  background-color: #ccc !important;
-  cursor: not-allowed;
-  opacity: 0.5 !important;
+  background-color: #ccc !important; /* Deaktivierte Hintergrundfarbe */
+  cursor: not-allowed; /* Zeigt, dass der Button nicht klickbar ist */
+  opacity: 0.5 !important; /* Reduziert die Opazität */
 }
 </style>

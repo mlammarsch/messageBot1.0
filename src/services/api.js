@@ -27,6 +27,9 @@ export const sendToWebhook = async (webhookURL, data) => {
   formData.append('audioAttached', data.audioAttached);
   formData.append('imageAttached', data.imageAttached);
 
+  // Eintrag der angeklickten Category
+  formData.append('category', data.category);
+
   try {
     // Sends data to the webhook with a specified timeout
     const response = await axios.post(webhookURL, formData, {

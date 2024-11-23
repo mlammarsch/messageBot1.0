@@ -1,5 +1,4 @@
 <template>
-  <!-- Modal zur Auswahl einer Kategorie, sichtbar wenn `isVisible` true und Kategorien vorhanden sind -->
   <div
     v-if="isVisible && categories.length"
     class="modal fade show d-block"
@@ -9,7 +8,6 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Wähle eine Kategorie aus</h5>
-          <!-- Schließen-Button für das Modal -->
           <button
             type="button"
             class="btn-close"
@@ -20,34 +18,27 @@
         <div
           class="modal-body d-flex flex-column"
           tabindex="0"
-          @keyup.down.prevent="moveSelection('down')"
-          @keyup.up.prevent="moveSelection('up')"
+          @keydown.up.prevent="moveSelection('up')"
+          @keydown.down.prevent="moveSelection('down')"
           @keydown.enter.prevent="confirmSelection"
           ref="modalBody"
         >
           <ul class="list-group overflow-auto flex-grow-1" ref="categoryList">
-            <!-- Ein spezieller Eintrag für die Auswahl ohne Kategorie -->
             <li
               class="list-group-item d-flex justify-content-between align-items-center"
               @click="handleSpecialItemClick"
-              :class="{
-                selected: currentIndex === -1,
-              }"
+              :class="{ selected: currentIndex === -1 }"
             >
               ohne Kategorie
             </li>
-            <!-- Liste der Kategorien aus `categories` -->
             <li
               v-for="(category, index) in categories"
               :key="category"
               class="list-group-item d-flex justify-content-between align-items-center"
               @click="handleCategoryClick(category, index)"
-              :class="{
-                selected: currentIndex === index,
-              }"
+              :class="{ selected: currentIndex === index }"
             >
               {{ category }}
-              <!-- Anzeige der Kategorie -->
             </li>
           </ul>
         </div>
@@ -57,79 +48,84 @@
 </template>
 
 <script>
-import { loadCategories } from "../services/storage.js"; // Importiere Funktion zum Laden der Kategorien
+import { loadCategories } from "../services/storage.js";
 
 export default {
-  props: ["isVisible"], // Eigenschaft, um die Sichtbarkeit des Modals zu steuern
+  props: ["isVisible"],
   data() {
     return {
-      categories: loadCategories(), // Lädt die Kategorien
-      currentIndex: -1, // Setzt den Standardwert initial auf -1 für "ohne Kategorie"
+      categories: loadCategories(),
+      currentIndex: -1,
     };
   },
-  watch: {
-    isVisible(newValue) {
-      if (newValue) {
-        this.currentIndex = -1; // Beim Öffnen des Modals ist "ohne Kategorie" ausgewählt
-        this.$nextTick(() => {
-          this.$refs.modalBody.focus(); // Fokussiere den Modal-Inhalt, um Keyevents zu erfassen
-        });
-      }
-    },
-  },
   methods: {
-    // Handler für den Klick auf den speziellen Eintrag "ohne Kategorie"
     handleSpecialItemClick() {
+      this.currentIndex = -1;
       this.selectCategory(null);
     },
-
-    // Handler für den Klick auf eine Kategorie
     handleCategoryClick(category, index) {
       this.currentIndex = index;
       this.selectCategory(category);
     },
-
-    // Funktion zur Auswahl einer Kategorie
     selectCategory(category) {
-      this.$emit("category-selected", category); // Emitte die ausgewählte Kategorie
-      this.close(); // Schließe das Modal
+      this.$emit("category-selected", category);
+      setTimeout(() => {
+        this.close();
+      }, 500);
     },
-
-    // Bewege die Auswahl nach oben oder unten
     moveSelection(direction) {
       const length = this.categories.length;
       if (direction === "up") {
-        this.currentIndex = (this.currentIndex - 1 + length + 1) % (length + 1) - 1;
+        if (this.currentIndex === -1) {
+          this.currentIndex = length - 1;
+        } else {
+          this.currentIndex =
+            this.currentIndex > 0 ? this.currentIndex - 1 : -1;
+        }
       } else if (direction === "down") {
-        this.currentIndex = (this.currentIndex + 1 + length + 1) % (length + 1) - 1;
+        if (this.currentIndex === length - 1) {
+          this.currentIndex = -1;
+        } else {
+          this.currentIndex =
+            this.currentIndex < length - 1 ? this.currentIndex + 1 : -1;
+        }
       }
-      this.scrollToSelected(); // Scrolle zu dem aktuell ausgewählten Element
+      this.scrollToSelected();
     },
-
-    // Bestätigt die aktuelle Auswahl
     confirmSelection() {
       if (this.currentIndex === -1) {
         this.handleSpecialItemClick();
       } else {
-        this.selectCategory(this.categories[this.currentIndex]);
+        this.handleCategoryClick(
+          this.categories[this.currentIndex],
+          this.currentIndex
+        );
       }
     },
-
-    // Schließt das Modal
     close() {
-      this.$emit("update:isVisible", false); // Emitte die Schließanfrage
+      this.$emit("update:isVisible", false);
     },
-
-    // Scrolle zu dem aktuell ausgewählten Element
     scrollToSelected() {
       this.$nextTick(() => {
         const list = this.$refs.categoryList;
         const selectedItem =
-          this.currentIndex === -1 ? list.children[0] : list.children[this.currentIndex + 1];
+          this.currentIndex === -1
+            ? list.children[0]
+            : list.children[this.currentIndex + 1];
         if (selectedItem) {
           selectedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
       });
+    },
+  },
+  watch: {
+    isVisible(newValue) {
+      if (newValue) {
+        this.currentIndex = -1;
+        this.$nextTick(() => {
+          this.$refs.modalBody.focus(); // Fokussiere modalBody nach dem Öffnen
+        });
+      }
     },
   },
 };
@@ -144,6 +140,7 @@ export default {
 .modal-body {
   display: flex;
   flex-direction: column;
+  outline: none; /* Entferne den Standard-Fokusrahmen */
 }
 
 .list-group {
@@ -153,15 +150,13 @@ export default {
 
 .list-group-item {
   cursor: pointer;
-  transition: border 0.3s, background-color 0.3s;
+  transition: background-color 0.3s;
   border-width: 1px;
   border-style: solid;
-  border-color: transparent;
+  border-color: #ccc;
 }
 
 .selected {
-  border-color: rgb(202, 202, 202);
-  border-width: 2px;
   background-color: lightgray;
 }
 </style>

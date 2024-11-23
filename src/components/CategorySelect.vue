@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="isVisible && categories.length"
+    v-if="isVisible && filteredCategories.length"
     class="modal fade show d-block"
     aria-modal="true"
   >
@@ -21,6 +21,7 @@
           @keydown.up.prevent="moveSelection('up')"
           @keydown.down.prevent="moveSelection('down')"
           @keydown.enter.prevent="confirmSelection"
+          @keydown="applyKeyFilter"
           ref="modalBody"
         >
           <ul class="list-group overflow-auto flex-grow-1" ref="categoryList">
@@ -32,7 +33,7 @@
               ohne Kategorie
             </li>
             <li
-              v-for="(category, index) in categories"
+              v-for="(category, index) in filteredCategories"
               :key="category"
               class="list-group-item d-flex justify-content-between align-items-center"
               @click="handleCategoryClick(category, index)"
@@ -56,7 +57,19 @@ export default {
     return {
       categories: loadCategories(),
       currentIndex: -1,
+      keyFilter: "", // Zeichenfilter für die Kategorien
     };
+  },
+  computed: {
+    filteredCategories() {
+      if (!this.keyFilter) {
+        return this.categories;
+      }
+      const filter = this.keyFilter.toLowerCase();
+      return this.categories.filter((category) =>
+        category.toLowerCase().startsWith(filter)
+      );
+    },
   },
   methods: {
     handleSpecialItemClick() {
@@ -68,24 +81,26 @@ export default {
       this.selectCategory(category);
     },
     selectCategory(category) {
-      this.$emit('category-selected', category);
+      this.$emit("category-selected", category);
       setTimeout(() => {
         this.close();
       }, 500);
     },
     moveSelection(direction) {
-      const length = this.categories.length;
+      const length = this.filteredCategories.length;
       if (direction === "up") {
         if (this.currentIndex === -1) {
           this.currentIndex = length - 1;
         } else {
-          this.currentIndex = (this.currentIndex > 0) ? this.currentIndex - 1 : -1;
+          this.currentIndex =
+            this.currentIndex > 0 ? this.currentIndex - 1 : -1;
         }
       } else if (direction === "down") {
         if (this.currentIndex === length - 1) {
           this.currentIndex = -1;
         } else {
-          this.currentIndex = (this.currentIndex < length - 1) ? this.currentIndex + 1 : -1;
+          this.currentIndex =
+            this.currentIndex < length - 1 ? this.currentIndex + 1 : -1;
         }
       }
       this.scrollToSelected();
@@ -94,32 +109,56 @@ export default {
       if (this.currentIndex === -1) {
         this.handleSpecialItemClick();
       } else {
-        this.handleCategoryClick(this.categories[this.currentIndex], this.currentIndex);
+        this.handleCategoryClick(
+          this.filteredCategories[this.currentIndex],
+          this.currentIndex
+        );
       }
     },
     close() {
-      this.$emit('update:isVisible', false);
+      this.$emit("update:isVisible", false);
     },
     scrollToSelected() {
       this.$nextTick(() => {
         const list = this.$refs.categoryList;
         const selectedItem =
-          this.currentIndex === -1 ? list.children[0] : list.children[this.currentIndex + 1];
+          this.currentIndex === -1
+            ? list.children[0]
+            : list.children[this.currentIndex + 1];
         if (selectedItem) {
           selectedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
       });
+    },
+    handleEscapeKey(event) {
+      if (event.key === "Escape") {
+        this.close();
+      }
+    },
+    applyKeyFilter(event) {
+      const key = event.key;
+      if (/^[a-zA-Z0-9]$/.test(key)) {
+        this.keyFilter = key;
+        this.currentIndex = -1; // Reset selection when filter changes
+      }
     },
   },
   watch: {
     isVisible(newValue) {
       if (newValue) {
         this.currentIndex = -1;
+        this.keyFilter = ""; // Reset filter when modal opens
         this.$nextTick(() => {
           this.$refs.modalBody.focus(); // Fokussiere modalBody nach dem Öffnen
         });
       }
     },
+  },
+  mounted() {
+    window.addEventListener("keydown", this.handleEscapeKey);
+  },
+  beforeDestroy() {
+    window.removeEventListener("keydown", this.handleEscapeKey);
   },
 };
 </script>

@@ -35,8 +35,8 @@
           >
             {{
               message.success
-                ? "Message sent successfully"
-                : "Failed to send message"
+                ? "Versand erfolgreich"
+                : "Versand fehlgeschlagen!"
             }}
           </span>
         </div>

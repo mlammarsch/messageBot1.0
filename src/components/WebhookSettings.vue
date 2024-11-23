@@ -8,8 +8,10 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
+            <label for="webhookUrl" class="form-label">Webhook-Link</label>
             <input 
               type="text" 
+              id="webhookUrl"
               v-model="url" 
               placeholder="Enter Webhook URL" 
               class="form-control mb-2 rounded-pill" 
@@ -18,21 +20,21 @@
             <div v-if="urlError" class="text-danger mb-2">{{ urlError }}</div>
             <div class="button-group d-flex justify-content-between">
               <button 
-                class="btn btn-success rounded-pill" 
+                class="btn btn-success rounded-pill flex-grow-1 mx-1" 
                 @click="saveWebhook" 
                 aria-label="Webhook URL speichern"
               >
                 Save
               </button>
               <button 
-                class="btn btn-secondary rounded-pill" 
+                class="btn btn-outline-secondary rounded-pill flex-grow-1 mx-1" 
                 @click="$emit('close-settings')" 
                 aria-label="Einstellungen abbrechen"
               >
                 Cancel
               </button>
               <button 
-                class="btn btn-danger rounded-pill" 
+                class="btn btn-outline-danger rounded-pill flex-grow-1 mx-1" 
                 @click="confirmClearWebhook" 
                 aria-label="Webhook URL löschen"
               >
@@ -40,6 +42,7 @@
               </button>
             </div>
           </div>
+          <hr class="my-4">
           <div class="mt-4">
             <button 
               class="btn btn-danger w-100 rounded-pill" 

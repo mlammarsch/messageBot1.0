@@ -10,12 +10,6 @@
         class="chat-bubble p-3 mb-3 border"
         role="article"
         aria-labelledby="message-timestamp"
-        style="
-          max-width: 90%;
-          background-color: rgba(241, 241, 241, 0.40);
-          border-radius: 2rem;
-          position: relative;
-        "
       >
         <!-- Zeigt den Zeitstempel der Nachricht an -->
         <div
@@ -76,7 +70,7 @@
     </div>
 
     <!-- Eingabefläche für Nachrichten -->
-    <div class="input-area p-2 border-top bg-light" ref="inputArea">
+    <div class="input-area p-2" ref="inputArea">
       <div class="d-flex align-items-center mb-2">
         <!-- Eingabefeld für Nachrichtentext -->
         <input
@@ -100,8 +94,8 @@
         <!-- Button zum Senden der Nachricht -->
         <button
           @click="sendMessage"
-          class="btn btn-primary btn-send rounded-pill mx-1"
-          :class="{ 'btn-disabled': isSendDisabled }"
+          class="send-button mx-1"
+          :class="{ 'send-button-inactive': isSendDisabled }"
           aria-label="Send Message"
           role="button"
           :disabled="isSendDisabled"
@@ -466,111 +460,105 @@ export default {
 <style>
 /* Stile für Warnmeldungen und allgemeines Design */
 .alert {
-  margin: 10px 0; /* Abstand oben und unten */
-  padding: 10px; /* Innenabstand */
-  border-radius: 5px; /* Abgerundete Ecken */
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 5px;
 }
 
 /* Farben für alert-Komponenten */
 .alert-warning {
-  background-color: #ffeb3b; /* Hintergrundfarbe für Warnmeldungen */
-  color: #1a1a1a; /* Textfarbe */
+  background-color: #ffeb3b;
+  color: #1a1a1a;
 }
 
 .alert-info {
-  background-color: #cce5ff; /* Hintergrundfarbe für Informationsmeldungen */
-  color: #004085; /* Textfarbe */
+  background-color: #cce5ff;
+  color: #004085;
 }
 
 /* Hauptkontainer-Stile */
 .app-container {
-  display: flex; /* Flexbox-Layout */
-  flex-direction: column; /* Spaltenanordnung */
-  height: 100vh; /* Höhe: 100% des Viewports */
-  overflow: hidden; /* Verhindert Überlauf */
-  position: relative; /* Relativen Positionierungskontext */
-  background-color: #e0f7e9; /* Hintergrundfarbe */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background-color: #eee7ee; /* Hintergrund der App-Oberfläche bleibt weiß */
 }
 
 /* Stile für den Chatinhalt */
 .chat-content {
-  position: absolute; /* Absolute Positionierung */
-  top: 0; /* Obere Kante */
-  bottom: 0; /* Untere Kante beachten */
-  width: 100%; /* Volle Breite */
-  overflow-y: auto; /* Vertikaler Überlauf wird scrollbar */
-  padding: 10px; /* Innenabstand */
-  display: flex; /* Flexbox für den Chatinhalt */
-  flex-direction: column-reverse; /* Neue Nachrichten werden unten angezeigt */
-  scroll-behavior: smooth; /* Sanfte Scrollbewegung */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column-reverse;
+  scroll-behavior: smooth;
 }
 
 /* Stile für Chatblasen */
 .chat-bubble {
-  background-color: var(
-    --chat-bubble-background
-  ); /* Hintergrundfarbe für Chatblasen */
-  border-radius: var(--chat-bubble-border-radius); /* Abgerundete Ecken */
-  padding: var(--chat-bubble-padding); /* Innenabstand */
-  max-width: 90%; /* Maximale Breite */
-  margin-top: var(--chat-bubble-margin); /* Abstand nach oben */
-  margin-bottom: 0; /* Entfernt den unteren Abstand */
-  align-self: flex-start; /* Ausrichtung nach links */
+  background-color: #ddcfde; /* Korrekte Chat Bubble Hintergrundfarbe */
+  border-radius: 20px;
+  padding: 10px 15px;
+  max-width: 80%;
+  margin: 10px 0;
+  align-self: flex-start;
 }
 
 .message-timestamp {
-  font-size: 0.8em; /* Schriftgröße für Zeitstempel */
-  color: #6c757d; /* Grau für Zeitstempel */
+  font-size: 0.8em;
+  color: #6c757d;
 }
 
 .message-status {
-  margin-bottom: 5px; /* Abstand unten */
+  margin-bottom: 5px;
 }
 
 .audio-control {
-  margin-top: 10px; /* Abstand oben für Audiosteuerung */
-  display: flex; /* Flexbox für Audiosteuerung */
-  align-items: center; /* Zentrieren der Inhalte */
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
 }
 
 /* Eingabebereich-Stile */
 .input-area {
-  position: absolute; /* Absolute Positionierung */
-  bottom: 0; /* Unten ausrichten */
-  width: 100%; /* Volle Breite */
-  background-color: #ffffff; /* Hintergrundfarbe */
-  border-top: solid 1px rgba(0, 0, 0, 0.125); /* Obere Border */
-  z-index: 1; /* Z-Index für Überlagerungen */
-}
-
-.settings-button {
-  position: absolute; /* Absolute Positionierung */
-  top: 10px; /* Abstand oben */
-  right: 10px; /* Abstand rechts */
-  z-index: 2; /* Z-Index für Überlagerungen */
-}
-
-.category-button {
-  position: absolute; /* Absolute Positionierung */
-  top: 10px; /* Abstand oben */
-  left: 10px; /* Abstand links */
-  z-index: 2; /* Z-Index für Überlagerungen */
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background-color: ##eee7ee; /* Eingabe-Leisten Hintergrund */
+  border-top: solid 1px rgba(0, 0, 0, 0.125);
+  z-index: 1;
 }
 
 /* Button-Transition bei Aktivierung */
 button {
-  transition: var(--btn-transition); /* Übergangsanimation */
+  transition: var(--btn-transition);
+  border: none; /* Entfernt den Rahmen von Buttons */
 }
 
 button:active {
-  transform: scale(var(--btn-active-scale)); /* Verkleinern bei Aktivierung */
-  opacity: var(--btn-active-opacity); /* Opazität bei Aktivierung */
+  transform: scale(var(--btn-active-scale));
+  opacity: var(--btn-active-opacity);
 }
 
 .btn-primary:disabled,
 .btn-disabled {
-  background-color: #ab96e9 !important; /* Deaktivierte Hintergrundfarbe */
-  cursor: not-allowed; /* Zeigt, dass der Button nicht klickbar ist */
-  opacity: 0.5 !important; /* Reduziert die Opazität */
+  background-color: #ddcfde !important; /* Sendbutton inaktiv */
+  cursor: not-allowed;
+  opacity: 0.5 !important;
+}
+
+.btn-primary {
+  background-color: #77427a !important; /* Sendbutton aktiv */
+  border-color: #77427a;
+}
+
+.btn-focus:focus,
+input:focus {
+  outline-color: #56135a !important; /* Akzentfarbe für Fokus */
 }
 </style>

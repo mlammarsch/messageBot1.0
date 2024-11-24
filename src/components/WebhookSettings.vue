@@ -185,11 +185,45 @@ export default {
 </script>
 
 <style scoped>
-.button-group {
-  margin-top: 1rem; /* Abstand oben zur Button-Gruppe */
+.modal-content {
+  background-color: #eee7ee; 
+}
+
+.modal-header, .modal-footer {
+  background-color: #bba0bd; 
+}
+
+.btn-success, .btn-outline-secondary {
+  background-color: #702d71; 
+  border-color: #702d71;
+  color: #fff; 
+}
+.btn-success:hover, .btn-outline-secondary:hover {
+  background-color: #56135a; 
+  border-color: #56135a;
+}
+
+/* Cancel-Button als Outline */
+button.btn.btn-outline-secondary {
+  color: #56135a;
+  border-color: #56135a;
+  background-color: transparent;
+}
+button.btn-outline-secondary:hover {
+  background-color: #eee7ee;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.button-group .btn:focus,
+input:focus {
+  outline-color: #56135a;
 }
 
 .mt-4 {
-  margin-top: 4rem; /* Großer Abstand oben zu bestimmten Elementen */
+  margin-top: 4rem; 
 }
 </style>

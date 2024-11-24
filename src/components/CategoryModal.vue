@@ -182,23 +182,36 @@ export default {
 </script>
 
 <style scoped>
-.modal-fullscreen-xxl-down .modal-dialog {
-  max-width: 1024px;
-  margin: auto;
+.modal-content {
+  background-color: #eee7ee; 
 }
 
-.modal-fullscreen .modal-content {
-  height: 100vh;
+.modal-header, .modal-footer {
+  background-color: #bba0bd; 
 }
 
-.modal-body {
-  display: flex;
-  flex-direction: column;
+.btn-success, .btn-outline-secondary {
+  background-color: #702d71; 
+  border-color: #702d71;
+  color: #fff; 
+}
+.btn-success:hover, .btn-outline-secondary:hover {
+  background-color: #56135a; 
+  border-color: #56135a;
 }
 
-.list-group {
-  flex-grow: 1;
-  overflow-y: auto;
+/* Cancel-Button als Outline */
+button.btn.btn-outline-secondary {
+  color: #56135a;
+  border-color: #56135a;
+  background-color: transparent;
+}
+button.btn-outline-secondary:hover {
+  background-color: #eee7ee;
+}
+
+.input-group input, .list-group-item {
+  background-color: #ffffff; 
 }
 
 .btn-outline-danger {
@@ -211,6 +224,6 @@ export default {
 }
 
 .highlight {
-  background-color: lightgray;
+  background-color: #bba0bd;
 }
 </style>

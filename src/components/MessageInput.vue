@@ -5,20 +5,10 @@
     <input
       type="text"
       v-model="localMessage"
-      <!--
-      Bindet
-      das
-      lokale
-      Nachrichtenmodell
-      --
-    />
-    @input="emitInput"
-    <!-- Ruft die Methode `emitInput` bei jeder Eingabe auf -->
-    placeholder="Type a message..." class="form-control message-input
-    rounded-circle"
-    <!-- Stile für das Eingabefeld -->
-    aria-label="Type a message..."
-    <!-- Zugänglichkeit: Beschreibung für Screenreader -->
+      @input="emitInput"
+      placeholder="Type a message..."
+      class="form-control" 
+      aria-label="Type a message..."
     />
   </div>
 </template>
@@ -27,9 +17,8 @@
 export default {
   props: {
     modelValue: {
-      // Prop zur Bindung des Nachrichtenwerts
-      type: String, // Datentyp des Props
-      default: "", // Standardwert
+      type: String,
+      default: "",
     },
   },
   data() {
@@ -47,27 +36,12 @@ export default {
      * Emitiert das aktualisierte Nachrichtenmodell.
      */
     emitInput() {
-      this.$emit("update:modelValue", this.localMessage); // Emitte das lokale Nachrichtenmodell zurück an den Parent
+      this.$emit("update:modelValue", this.localMessage);
     },
   },
 };
 </script>
 
 <style scoped>
-.message-input {
-  flex: 1; /* Nimmt den verfügbaren Platz ein */
-  padding: 10px; /* Innenabstand */
-  border: 1px solid #ccc; /* Rahmenfarbe */
-  border-radius: 50px; /* Abgerundete Ecken */
-  outline: none; /* Entfernt den Standardrahmen bei Fokussierung */
-  transition: border-color 0.3s; /* Sanfte Übergangsanimation für die Rahmenfarbe */
-}
-
-.message-input:focus {
-  border-color: #8e7cc3; /* Farbe des Rahmens bei Fokussierung */
-}
-
-.message-input::placeholder {
-  color: #ccc; /* Farbe des Platzhaltertextes */
-}
+/* Der folgende Style ist entfernt, da Bootstrap form-control bereits notwendige Stile abdeckt */
 </style>

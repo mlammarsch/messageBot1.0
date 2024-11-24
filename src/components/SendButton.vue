@@ -1,6 +1,4 @@
-<!-- components/SendButton.vue -->
 <template>
-  <!-- Senden-Button -->
   <button
     @click="handleSend"
     class="send-button"
@@ -29,14 +27,9 @@ export default {
     },
   },
   methods: {
-    /**
-     * Emitiert das Send-Event mit den aktuellen Nachrichten- und Audio-Daten.
-     */
     handleSend() {
-      if (this.isLoading) return; // Verhindert das Senden während des laufenden Sendevorgangs
-
+      if (this.isLoading) return;
       if (this.message.trim() === "" && !this.audio) {
-        // Keine Daten zum Senden
         this.$emit("send", {});
       } else {
         this.$emit("send", {
@@ -50,25 +43,6 @@ export default {
 </script>
 
 <style scoped>
-.send-button {
-  padding: 15px;
-  border: none;
-  background-color: #8e7cc3 !important;
-  border-radius: 50%; /* Button bleibt rund */
-  cursor: pointer;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.send-button:disabled {
-  background-color: #c5b1ff;
-  cursor: not-allowed;
-}
-
 .icon {
   width: 24px;
   height: 24px;

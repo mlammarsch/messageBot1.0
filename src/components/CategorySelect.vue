@@ -200,20 +200,16 @@ export default {
 </script>
 
 <style scoped>
-.modal-fullscreen-xxl-down .modal-dialog {
-  max-width: 1024px;
-  margin: auto;
+.modal-content {
+  background-color: #eee7ee; 
 }
 
-.modal-body {
-  display: flex;
-  flex-direction: column;
-  outline: none;
+.modal-header, .modal-footer {
+  background-color: #bba0bd; 
 }
 
-.list-group {
-  flex-grow: 1;
-  overflow-y: auto;
+.list-group-item.selected {
+  background-color: #bba0bd; 
 }
 
 .list-group-item {
@@ -222,9 +218,5 @@ export default {
   border-width: 1px;
   border-style: solid;
   border-color: #ccc;
-}
-
-.selected {
-  background-color: lightgray;
 }
 </style>

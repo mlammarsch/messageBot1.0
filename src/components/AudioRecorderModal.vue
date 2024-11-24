@@ -220,24 +220,35 @@ export default {
 </script>
 
 <style scoped>
-.recording-symbol {
-  font-size: 30px; /* Vergrößert das Aufnahmeicon */
-  color: red; /* Farbe für das Aufnahmeicon */
-  animation: pulse 1s infinite; /* Pulsierende Animation */
+.modal-content {
+  background-color: #eee7ee;
 }
 
-.paused {
-  animation: none; /* Entferne Animation wenn pausiert */
+.modal-header, .modal-footer {
+  background-color: #bba0bd;
 }
 
-/* Pulsierende Animation definieren */
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1); /* Ursprüngliche Größe */
-  }
-  50% {
-    transform: scale(1.2); /* Vergrößert auf 1.2 bei 50% */
-  }
+.btn-warning, .btn-info {
+  background-color: #702d71;
+  border-color: #702d71;
+  color: #fff;
+}
+.btn-warning:hover, .btn-info:hover {
+  background-color: #56135a;
+  border-color: #56135a;
+}
+
+.btn-danger, .btn-outline-secondary {
+  color: #56135a;
+  border-color: #56135a;
+  background-color: transparent;
+}
+.btn-outline-secondary:hover {
+  background-color: #eee7ee;
+}
+
+/* Entferne unerwünschte Fokusfarbgebung */
+.btn:focus, .btn:active {
+  outline: none;
 }
 </style>

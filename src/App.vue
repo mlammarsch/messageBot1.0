@@ -94,8 +94,8 @@
         <!-- Button zum Senden der Nachricht -->
         <button
           @click="sendMessage"
-          class="send-button mx-1"
-          :class="{ 'send-button-inactive': isSendDisabled }"
+          class="button-send mx-1"
+          :class="{ 'button-disabled': isSendDisabled }"
           aria-label="Send Message"
           role="button"
           :disabled="isSendDisabled"
@@ -113,7 +113,7 @@
           aria-label="Audio abspielen"
         ></audio>
         <button
-          class="btn btn-outline-danger btn-delete"
+          class="button-delete-audio"
           @click="deleteAudio"
           aria-label="Delete Audio"
           role="button"
@@ -529,9 +529,37 @@ export default {
   position: absolute;
   bottom: 0;
   width: 100%;
-  background-color: ##eee7ee; /* Eingabe-Leisten Hintergrund */
+  background-color: ##eee7ee;
   border-top: solid 1px rgba(0, 0, 0, 0.125);
   z-index: 1;
+}
+
+.input-area .form-control {
+  border-radius: 50px;
+  outline: none; /* Entferne Standard-Outline */
+  transition: outline-color 0.3s, border-color 0.3s; /* Glatter Übergang */
+}
+
+/* Fokuszustand für das Nachrichteneingabefeld */
+.input-area .form-control:focus {
+  outline-color: var(--focus-color);
+  border-color: var(--focus-color);
+  box-shadow: 0 0 0 0.2rem rgba(86, 19, 90, 0.25);
+}
+
+/* Send-Button-Stile */
+.button-send {
+  padding: 10px 20px; /* Pill shape */
+  border-radius: 50px; /* Pill shape */
+  background-color: var(--send-button-active);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+
+.button-send:disabled {
+  background-color: var(--send-button-inactive);
+  cursor: not-allowed;
 }
 
 /* Button-Transition bei Aktivierung */
@@ -545,20 +573,23 @@ button:active {
   opacity: var(--btn-active-opacity);
 }
 
-.btn-primary:disabled,
-.btn-disabled {
-  background-color: #ddcfde !important; /* Sendbutton inaktiv */
-  cursor: not-allowed;
-  opacity: 0.5 !important;
+.button-delete-audio {
+  color: #dc3545;
+  background: transparent;
+  border: 1px solid #dc3545;
+  border-radius: 20px;
+  padding: 0.6em 1.2em;
+  margin: 5px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.25s;
 }
 
-.btn-primary {
-  background-color: #77427a !important; /* Sendbutton aktiv */
-  border-color: #77427a;
+.button-delete-audio:hover {
+  background-color: #f8d7da;
 }
 
-.btn-focus:focus,
-input:focus {
-  outline-color: #56135a !important; /* Akzentfarbe für Fokus */
+.input-area:focus-within .form-control {
+  outline-color: var(--focus-color);
 }
 </style>

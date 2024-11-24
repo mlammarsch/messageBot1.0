@@ -195,9 +195,23 @@ export default {
   border-color: #702d71;
   color: #fff; 
 }
+
 .btn-success:hover, .btn-outline-secondary:hover {
   background-color: #56135a; 
   border-color: #56135a;
+}
+
+/* Fokus-Stile für das Kategorieeingabefeld */
+.form-control {
+  border-radius: 50px;
+  outline: none; /* Entferne Standard-Outline */
+  transition: outline-color 0.3s, border-color 0.3s; /* Glatter Übergang */
+}
+
+.form-control:focus {
+  outline-color: var(--focus-color);
+  border-color: var(--focus-color);
+  box-shadow: 0 0 0 0.2rem rgba(86, 19, 90, 0.25);
 }
 
 /* Cancel-Button als Outline */

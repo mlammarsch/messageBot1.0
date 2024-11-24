@@ -5,23 +5,23 @@
     color-scheme: light dark;
     color: rgba(0, 0, 0, 0.87);
     background-color: #eee7ee;
-  
+
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  
+
     --btn-transition: transform 0.1s, opacity 0.1s;
     --btn-active-scale: 0.95;
     --btn-active-opacity: 0.8;
-  
+
     --modal-background: #eee7ee;
     --focus-color: #56135a;
     --send-button-active: #77427a;
     --send-button-inactive: #b4b4b4;
-  }
-  
-  body {
+}
+
+body {
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -30,33 +30,19 @@
     justify-content: center;
     height: 100vh;
     background-color: var(--modal-background);
-  }
-  
-  .input-area {
+}
+
+.input-area {
     padding: 10px;
     background-color: #d5c4d8;
     border-top: solid 1px rgba(0, 0, 0, 0.125);
-  }
-  
-  input:focus {
-    outline-color: var(--focus-color) !important;
-  }
-  
-  .send-button {
-    padding: 10px 20px; /* Pill shape */
-    border-radius: 50px; /* Pill shape */
-    background-color: var(--send-button-active);
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.25s;
-  }
-  
-  .send-button:disabled {
-    background-color: var(--send-button-inactive);
-    cursor: not-allowed;
-  }
+}
 
-  .app-container {
+input:focus {
+    outline-color: var(--focus-color) !important;
+}
+
+.app-container {
     width: 100vw;
     height: 100%;
     min-height: 100vh;
@@ -66,66 +52,39 @@
     position: relative;
     box-sizing: border-box;
     overflow: hidden;
-  }
-  
-  .btn-primary:disabled,
-  .btn-disabled {
+}
+
+.btn-primary:disabled,
+.btn-disabled {
     background-color: var(--send-button-inactive); 
     cursor: not-allowed;
     opacity: 0.5;
-  }
-  
-  .btn {
-    border-radius: 20px;
-    border: none;
-    padding: 0.6em 1.2em;
-    margin: 5px;
-    font-size: 1em;
-    font-weight: 500;
-    background-color: var(--send-button-active);
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.25s;
-  }
-  
-  .btn:hover {
-    background-color: #56135a;
-  }
-  
-  .audio-control {
-    margin: 5px;
-    display: flex;
-    align-items: center;
-  }
-  
-  a {
+}
+
+a {
     font-weight: 500;
     color: #646cff;
     text-decoration: inherit;
-  }
-  
-  a:hover {
+}
+
+a:hover {
     color: #535bf2;
-  }
-  
-  @media (prefers-color-scheme: light) {
+}
+
+@media (prefers-color-scheme: light) {
     :root {
-      color: #695b92;
-      background-color: #ffffff;
+        color: #695b92;
+        background-color: #ffffff;
     }
-    
+
     a:hover {
-      color: #5e5283;
+        color: #56135a;
     }
-    
-    .btn {
-      background-color: #f9f9f9;
-    }
-  }
-  
-  @media (min-width: 1024px) {
+}
+
+@media (min-width: 1024px) {
     .app-container {
-      max-width: 1024px;
-      margin: 0 auto;
+        max-width: 1024px;
+        margin: 0 auto;
     }
-  }
+}

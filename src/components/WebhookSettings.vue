@@ -1,5 +1,4 @@
 <template>
-  <!-- Modal Dialog, der angezeigt wird, wenn isOpen true ist -->
   <div
     class="modal fade show"
     style="display: block"
@@ -12,11 +11,9 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <!-- Modal Titel -->
           <h4 id="webhook-settings-title" class="modal-title">
             Webhook Settings
           </h4>
-          <!-- Schließen-Button für das Modal -->
           <button
             type="button"
             class="btn-close"
@@ -26,22 +23,18 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <!-- Label für das Webhook-URL-Eingabefeld -->
             <label for="webhookUrl" class="form-label">Webhook-Link</label>
-            <!-- Eingabefeld für die Webhook-URL -->
             <input
               type="text"
               id="webhookUrl"
               v-model="url"
               placeholder="Enter Webhook URL"
               class="form-control mb-2 rounded-pill"
+              ref="webhookUrlInput"
               aria-label="Webhook URL eingeben"
             />
-            <!-- Fehlermeldung angezeigt, wenn die URL ungültig ist -->
             <div v-if="urlError" class="text-danger mb-2">{{ urlError }}</div>
-            <!-- Button-Gruppe mit drei Schaltflächen -->
             <div class="button-group d-flex justify-content-between">
-              <!-- Save-Button -->
               <button
                 class="btn btn-success rounded-pill flex-grow-1 mx-1"
                 @click="saveWebhook"
@@ -49,7 +42,6 @@
               >
                 Save
               </button>
-              <!-- Cancel-Button -->
               <button
                 class="btn btn-outline-secondary rounded-pill flex-grow-1 mx-1"
                 @click="$emit('close-settings')"
@@ -57,7 +49,6 @@
               >
                 Cancel
               </button>
-              <!-- Clear-Button -->
               <button
                 class="btn btn-outline-danger rounded-pill flex-grow-1 mx-1"
                 @click="confirmClearWebhook"
@@ -67,10 +58,8 @@
               </button>
             </div>
           </div>
-          <!-- Horizontaler Trenner zwischen den Abschnitten -->
           <hr class="my-4" />
           <div class="mt-4">
-            <!-- Button zum Löschen des Chatverlaufs -->
             <button
               class="btn btn-danger w-100 rounded-pill"
               @click="clearChatMessages"
@@ -87,97 +76,85 @@
 
 <script>
 export default {
-  // props, die von der Elternkomponente übergeben werden
   props: ["isOpen", "currentUrl"],
   data() {
     return {
-      url: this.currentUrl || "", // Eingabewert für die URL, initialisiert mit currentUrl
-      urlError: "", // Fehlernachricht, falls die URL ungültig ist
+      url: this.currentUrl || "",
+      urlError: "",
     };
   },
   mounted() {
-    // Setze die url mit currentUrl, wenn die Komponente gemountet wird
     this.url = this.currentUrl;
-    // Ereignislistener hinzufügen, wenn das Modal geöffnet wird
     if (this.isOpen) {
       document.addEventListener("keypress", this.handleKeyPress);
-      document.addEventListener("keydown", this.handleEscapePress); // Escape-Taste Ereignislistener hinzufügen
+      document.addEventListener("keydown", this.handleEscapePress);
+      this.focusInput();
     }
   },
   beforeDestroy() {
-    // Entferne den Ereignislistener, wenn die Komponente zerstört wird
     document.removeEventListener("keypress", this.handleKeyPress);
-    document.removeEventListener("keydown", this.handleEscapePress); // Escape-Taste Ereignislistener entfernen
+    document.removeEventListener("keydown", this.handleEscapePress);
   },
   methods: {
-    // Methode zum Speichern der Webhook-URL
+    focusInput() {
+      this.$nextTick(() => {
+       const inputElement = this.$refs.webhookUrlInput;
+       if (inputElement) inputElement.focus();
+      });
+    },
     saveWebhook() {
-      // Überprüfe, ob die URL gültig ist
       if (!this.validURL(this.url)) {
-        // Setze eine Fehlermeldung, falls die URL ungültig ist
         this.urlError = "Invalid URL. Please enter a valid Webhook URL.";
         return;
       }
-      // Lösche die Fehlermeldung, wenn die URL gültig ist
       this.urlError = "";
-      // Emitiere Event, um die neue URL an die Elternkomponente zu senden
       this.$emit("webhook-updated", this.url);
-      // Schließe das Modal
       this.$emit("close-settings");
     },
-    // Methode zum Bestätigen und Löschen der Webhook-URL
     confirmClearWebhook() {
-      this.url = ""; // Leere die gespeicherte URL
-      this.urlError = ""; // Lösche die Fehlermeldung
-      this.$emit("webhook-cleared"); // Emitiere Event, dass die URL gelöscht wurde
+      this.url = "";
+      this.urlError = "";
+      this.$emit("webhook-cleared");
     },
-    // Validierungsmethode für die URL
     validURL(str) {
-      // Regex zur Überprüfung der URL-Struktur
       const pattern = new RegExp(
-        "^(https?:\\/\\/)?" +
-          "((([a-z\\d]([-]*[a-z\\d])*)\\.)+[a-z]{2,}|" +
-          "((\\d{1,3}\\.){3}\\d{1,3}))" +
-          "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" +
-          "(\\?[;&a-z\\d%_.~+=-]*)?" +
+        "^(https?:\\/\\/)?" + // protocol
+          "((([a-z\\d]([-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain
+          "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
+          "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
+          "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
           "(\\#[-a-z\\d_]*)?$",
         "i"
       );
       return !!pattern.test(str);
     },
-    // Methode zum Löschen von Chat-Nachrichten
     clearChatMessages() {
-      this.$emit("clear-messages"); // Emitiere Event, um alle Nachrichten zu löschen
-      this.$emit("close-settings"); // Schließe das Modal
+      this.$emit("clear-messages");
+      this.$emit("close-settings");
     },
-    // Ereignislistener für die Eingabetaste
     handleKeyPress(event) {
       if (event.key === "Enter") {
-        this.saveWebhook(); // Speichere die URL, wenn die Eingabetaste gedrückt wird
+        this.saveWebhook();
       }
     },
-    // Ereignislistener für die Escape-Taste
     handleEscapePress(event) {
       if (event.key === "Escape") {
-        this.$emit("close-settings"); // Schließe das Modal, wenn die Escape-Taste gedrückt wird
+        this.$emit("close-settings");
       }
     },
   },
   watch: {
-    // Überwache Änderungen an der currentUrl
     currentUrl(newVal) {
-      this.url = newVal || ""; // Aktualisiere die url mit dem neuen Wert
+      this.url = newVal || "";
     },
-    // Überwache das Öffnen/Schließen des Modals
     isOpen(newVal) {
       if (newVal) {
-        // Füge Listener hinzu, wenn das Modal geöffnet wird
         document.addEventListener("keypress", this.handleKeyPress);
-        document.addEventListener("keydown", this.handleEscapePress); // Escape-Taste Ereignislistener hinzufügen
+        document.addEventListener("keydown", this.handleEscapePress);
+        this.focusInput();
       } else {
-        // Entferne Listener, wenn das Modal geschlossen wird
         document.removeEventListener("keypress", this.handleKeyPress);
-        document.removeEventListener("keydown", this.handleEscapePress); // Escape-Taste Ereignislistener entfernen
+        document.removeEventListener("keydown", this.handleEscapePress);
       }
     },
   },
@@ -186,24 +163,36 @@ export default {
 
 <style scoped>
 .modal-content {
-  background-color: #eee7ee; 
+  background-color: #eee7ee;
 }
 
 .modal-header, .modal-footer {
-  background-color: #bba0bd; 
+  background-color: #bba0bd;
 }
 
 .btn-success, .btn-outline-secondary {
-  background-color: #702d71; 
+  background-color: #702d71;
   border-color: #702d71;
-  color: #fff; 
+  color: #fff;
 }
+
 .btn-success:hover, .btn-outline-secondary:hover {
-  background-color: #56135a; 
+  background-color: #56135a;
   border-color: #56135a;
 }
 
-/* Cancel-Button als Outline */
+.form-control {
+  border-radius: 50px;
+  outline: none;
+  transition: outline-color 0.3s, border-color 0.3s;
+}
+
+.form-control:focus {
+  outline-color: var(--focus-color);
+  border-color: var(--focus-color);
+  box-shadow: 0 0 0 0.2rem rgba(86, 19, 90, 0.25);
+}
+
 button.btn.btn-outline-secondary {
   color: #56135a;
   border-color: #56135a;
@@ -224,6 +213,6 @@ input:focus {
 }
 
 .mt-4 {
-  margin-top: 4rem; 
+  margin-top: 4rem;
 }
 </style>

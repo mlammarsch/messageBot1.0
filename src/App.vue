@@ -11,9 +11,9 @@
         role="article"
         aria-labelledby="message-timestamp"
         style="
-          max-width: 60%;
-          background-color: rgba(241, 241, 241, 0.85);
-          border-radius: 1rem;
+          max-width: 90%;
+          background-color: rgba(241, 241, 241, 0.40);
+          border-radius: 2rem;
           position: relative;
         "
       >

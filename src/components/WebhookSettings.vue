@@ -101,11 +101,13 @@ export default {
     // Ereignislistener hinzufügen, wenn das Modal geöffnet wird
     if (this.isOpen) {
       document.addEventListener("keypress", this.handleKeyPress);
+      document.addEventListener("keydown", this.handleEscapePress); // Escape-Taste Ereignislistener hinzufügen
     }
   },
   beforeDestroy() {
     // Entferne den Ereignislistener, wenn die Komponente zerstört wird
     document.removeEventListener("keypress", this.handleKeyPress);
+    document.removeEventListener("keydown", this.handleEscapePress); // Escape-Taste Ereignislistener entfernen
   },
   methods: {
     // Methode zum Speichern der Webhook-URL
@@ -154,6 +156,12 @@ export default {
         this.saveWebhook(); // Speichere die URL, wenn die Eingabetaste gedrückt wird
       }
     },
+    // Ereignislistener für die Escape-Taste
+    handleEscapePress(event) {
+      if (event.key === "Escape") {
+        this.$emit("close-settings"); // Schließe das Modal, wenn die Escape-Taste gedrückt wird
+      }
+    },
   },
   watch: {
     // Überwache Änderungen an der currentUrl
@@ -165,9 +173,11 @@ export default {
       if (newVal) {
         // Füge Listener hinzu, wenn das Modal geöffnet wird
         document.addEventListener("keypress", this.handleKeyPress);
+        document.addEventListener("keydown", this.handleEscapePress); // Escape-Taste Ereignislistener hinzufügen
       } else {
         // Entferne Listener, wenn das Modal geschlossen wird
         document.removeEventListener("keypress", this.handleKeyPress);
+        document.removeEventListener("keydown", this.handleEscapePress); // Escape-Taste Ereignislistener entfernen
       }
     },
   },

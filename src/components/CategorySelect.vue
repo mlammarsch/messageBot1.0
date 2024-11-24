@@ -3,6 +3,8 @@
     v-if="isVisible && filteredCategories.length"
     class="modal fade show d-block"
     aria-modal="true"
+    ref="modalDialog"
+    tabindex="-1"
   >
     <div class="modal-dialog modal-fullscreen-xxl-down" role="document">
       <div class="modal-content">
@@ -17,7 +19,7 @@
         </div>
         <div
           class="modal-body d-flex flex-column"
-          tabindex="0"
+          tabindex="-1"
           @keydown.up.prevent="moveSelection('up')"
           @keydown.down.prevent="moveSelection('down')"
           @keydown.enter.prevent="confirmSelection"
@@ -57,7 +59,8 @@ export default {
     return {
       categories: loadCategories(),
       currentIndex: -1,
-      keyFilter: "", // Zeichenfilter für die Kategorien
+      keyFilter: "",
+      filterTimeout: null,
     };
   },
   computed: {
@@ -89,19 +92,11 @@ export default {
     moveSelection(direction) {
       const length = this.filteredCategories.length;
       if (direction === "up") {
-        if (this.currentIndex === -1) {
-          this.currentIndex = length - 1;
-        } else {
-          this.currentIndex =
-            this.currentIndex > 0 ? this.currentIndex - 1 : -1;
-        }
+        this.currentIndex =
+          this.currentIndex === -1 ? length - 1 : Math.max(this.currentIndex - 1, -1);
       } else if (direction === "down") {
-        if (this.currentIndex === length - 1) {
-          this.currentIndex = -1;
-        } else {
-          this.currentIndex =
-            this.currentIndex < length - 1 ? this.currentIndex + 1 : -1;
-        }
+        this.currentIndex =
+          this.currentIndex === length - 1 ? -1 : Math.min(this.currentIndex + 1, length - 1);
       }
       this.scrollToSelected();
     },
@@ -121,44 +116,85 @@ export default {
     scrollToSelected() {
       this.$nextTick(() => {
         const list = this.$refs.categoryList;
-        const selectedItem =
-          this.currentIndex === -1
-            ? list.children[0]
-            : list.children[this.currentIndex + 1];
-        if (selectedItem) {
-          selectedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        if (list && list.children && list.children.length > 0) {
+          const index = this.currentIndex === -1 ? 0 : this.currentIndex + 1;
+          if (index < list.children.length) {
+            const selectedItem = list.children[index];
+            if (selectedItem) {
+              selectedItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+          }
         }
       });
     },
-    handleEscapeKey(event) {
-      if (event.key === "Escape") {
-        this.close();
+    handleKeyDown(event) {
+      switch (event.key) {
+        case 'Escape':
+          this.close();
+          break;
+        case 'ArrowUp':
+          this.moveSelection('up');
+          break;
+        case 'ArrowDown':
+          this.moveSelection('down');
+          break;
+        case 'Enter':
+          this.confirmSelection();
+          break;
+        default:
+          this.applyKeyFilter(event);
+          break;
       }
     },
     applyKeyFilter(event) {
       const key = event.key;
       if (/^[a-zA-Z0-9]$/.test(key)) {
         this.keyFilter = key;
-        this.currentIndex = -1; // Reset selection when filter changes
+
+        const hasMatches = this.categories.some((category) =>
+          category.toLowerCase().startsWith(this.keyFilter.toLowerCase())
+        );
+
+        if (hasMatches) {
+          this.currentIndex = -1;
+
+          if (this.filterTimeout) clearTimeout(this.filterTimeout);
+          this.filterTimeout = setTimeout(() => {
+            this.keyFilter = "";
+          }, 2000);
+        } else {
+          this.keyFilter = "";
+        }
       }
+    },
+    focusModal() {
+      this.$nextTick(() => {
+        const modalDialog = this.$refs.modalDialog;
+        if (modalDialog) {
+          modalDialog.focus();
+          const modalBody = this.$refs.modalBody;
+          if (modalBody) {
+            modalBody.focus();
+          }
+        }
+      });
     },
   },
   watch: {
     isVisible(newValue) {
       if (newValue) {
         this.currentIndex = -1;
-        this.keyFilter = ""; // Reset filter when modal opens
-        this.$nextTick(() => {
-          this.$refs.modalBody.focus(); // Fokussiere modalBody nach dem Öffnen
-        });
+        this.keyFilter = "";
+        this.focusModal();
       }
     },
   },
   mounted() {
-    window.addEventListener("keydown", this.handleEscapeKey);
+    window.addEventListener("keydown", this.handleKeyDown);
   },
   beforeDestroy() {
-    window.removeEventListener("keydown", this.handleEscapeKey);
+    window.removeEventListener("keydown", this.handleKeyDown);
+    if (this.filterTimeout) clearTimeout(this.filterTimeout);
   },
 };
 </script>
@@ -172,7 +208,7 @@ export default {
 .modal-body {
   display: flex;
   flex-direction: column;
-  outline: none; /* Entferne den Standard-Fokusrahmen */
+  outline: none;
 }
 
 .list-group {

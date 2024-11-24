@@ -97,11 +97,13 @@ export default {
   created() {
     this.startRecording(); // Startet die Aufnahme bei Erstellung der Komponente
     document.addEventListener("keypress", this.handleKeyPress); // Fügt Eventlistener für Tastatureingaben hinzu
+    document.addEventListener("keydown", this.handleEscapePress); // Fügt Eventlistener für Escape-Taste hinzu
   },
   beforeDestroy() {
     this.stopTimer(); // Stoppt den Timer bevor die Komponente zerstört wird
     this.cleanup(); // Bereinigt Ressourcen
     document.removeEventListener("keypress", this.handleKeyPress); // Entfernt den Eventlistener
+    document.removeEventListener("keydown", this.handleEscapePress); // Entfernt den Eventlistener für Escape-Taste
   },
   methods: {
     // Startet die Audioaufnahme
@@ -205,6 +207,12 @@ export default {
     handleKeyPress(event) {
       if (event.key === "Enter") {
         this.stopRecording(); // Stoppe die Aufnahme bei Enter-Taste
+      }
+    },
+    // Handler für die Escape-Taste
+    handleEscapePress(event) {
+      if (event.key === "Escape") {
+        this.cancelRecording(); // Schließe das Modal, wenn die Escape-Taste gedrückt wird
       }
     },
   },

@@ -11,7 +11,7 @@ export default defineConfig({
       manifest: {
         name: 'Webhook Bot',
         short_name: 'App',
-        theme_color: '#4DBA87',
+        theme_color: '#8e7cc3',
         background_color: '#ffffff',
         display: 'standalone',
         scope: '/',

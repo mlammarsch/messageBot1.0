@@ -74,7 +74,7 @@ body {
     transition: border-color 0.25s;
 }
 .btn:hover {
-    border-color: #646cff;
+    border-color: #66598f;
 }
 .btn:focus,
 .btn:focus-visible {
@@ -108,11 +108,11 @@ body {
 
 @media (prefers-color-scheme: light) {
     :root {
-        color: #213547;
+        color: #695b92;
         background-color: #ffffff;
     }
     a:hover {
-        color: #747bff;
+        color: #5e5283;
     }
     .btn {
         background-color: #f9f9f9;

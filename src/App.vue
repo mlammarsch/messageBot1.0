@@ -569,7 +569,7 @@ button:active {
 
 .btn-primary:disabled,
 .btn-disabled {
-  background-color: #ccc !important; /* Deaktivierte Hintergrundfarbe */
+  background-color: #ab96e9 !important; /* Deaktivierte Hintergrundfarbe */
   cursor: not-allowed; /* Zeigt, dass der Button nicht klickbar ist */
   opacity: 0.5 !important; /* Reduziert die Opazität */
 }

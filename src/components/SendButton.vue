@@ -53,7 +53,7 @@ export default {
 .send-button {
   padding: 15px;
   border: none;
-  background-color: #28a745;
+  background-color: #8e7cc3 !important;
   border-radius: 50%; /* Button bleibt rund */
   cursor: pointer;
   position: fixed;
@@ -65,7 +65,7 @@ export default {
 }
 
 .send-button:disabled {
-  background-color: #94d3a2;
+  background-color: #c5b1ff;
   cursor: not-allowed;
 }
 

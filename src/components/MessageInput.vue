@@ -64,7 +64,7 @@ export default {
 }
 
 .message-input:focus {
-  border-color: #007bff; /* Farbe des Rahmens bei Fokussierung */
+  border-color: #8e7cc3; /* Farbe des Rahmens bei Fokussierung */
 }
 
 .message-input::placeholder {

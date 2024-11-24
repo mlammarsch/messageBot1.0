@@ -529,7 +529,7 @@ export default {
   position: absolute;
   bottom: 0;
   width: 100%;
-  background-color: ##eee7ee;
+  background-color: #eee7ee;
   border-top: solid 1px rgba(0, 0, 0, 0.125);
   z-index: 1;
 }

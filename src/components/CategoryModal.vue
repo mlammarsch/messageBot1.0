@@ -220,6 +220,7 @@ button.btn.btn-outline-secondary {
   border-color: #56135a;
   background-color: transparent;
 }
+
 button.btn-outline-secondary:hover {
   background-color: #eee7ee;
 }
@@ -239,5 +240,11 @@ button.btn-outline-secondary:hover {
 
 .highlight {
   background-color: #bba0bd;
+}
+
+/* Pill-Form für Buttons im Bestätigungsdialog */
+.modal-footer .btn {
+  border-radius: 50px;
+  padding: 0.6rem 1.2rem;
 }
 </style>
